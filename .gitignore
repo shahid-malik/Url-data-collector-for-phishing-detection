@@ -1,0 +1,5 @@
+DATA/
+.idea/
+test.py
+test2.py
+geckodriver.log
