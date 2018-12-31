@@ -1,17 +1,15 @@
 import base64
-import hashlib
-import shutil
+# import hashlib
+# import shutil
 import json
 import sys
 import os
 from datetime import datetime
 from urlparse import urlparse
 import urllib2
-import lxml.html
 import requests
 import hashlib
 # import Image
-from PIL import Image
 from BeautifulSoup import BeautifulSoup
 from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
@@ -25,7 +23,8 @@ def get_content_type(url):
     """
     try:
         content_type = requests.head(url).headers["Content-Type"]
-    except:
+    except Exception as e:
+        print("Error getting favicon from landing page with Exception \n %s" % e)
         content_type = ''
     return content_type
 
@@ -54,7 +53,8 @@ def get_base64(url):
     """
     try:
         b64_encoded = base64.b64encode(url.encode())
-    except:
+    except Exception as e:
+        print("Error getting base64 of url or text with Exception \n %s" % e)
         b64_encoded = ''
     return b64_encoded
 
@@ -65,31 +65,36 @@ def get_url_domain(url):
     :param url:
     :return: landing domain of url(string)
     """
+    domain = ''
     try:
         if url is not None:
             parsed_uri = urlparse(url)
             domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
     except Exception as e:
-        domain = ''
+        print("Exception in getting domain from given url with exception %s" % e)
+        pass
     return domain
+
 
 def get_page_title(driver):
     """
     Get the title of the page hit by  given url, provide processed urls with the http or https protocol
-    :param url:
+    :param driver:
     :return: title (string)
     """
     # soup = BeautifulSoup(urllib2.urlopen(url))
     try:
         # title = soup.title.string
-        title = driver.title
-    except:
+        title = driver.title.encode('ascii', 'replace')
+    except Exception as e:
+        print("Error while extracting title from landing page with Exception \n %s" % e)
+
         title = ''
 
     return title
 
 
-def get_favicons(url, directory):
+def get_favicon(url, directory):
     """
     Download the favicons to the directory of the domain or url - > UrlHash/Domain/icons or UrlHash/url/icons
     :param url:
@@ -99,7 +104,6 @@ def get_favicons(url, directory):
     total_favicons = 0
 
     try:
-        print(url)
         page = urllib2.urlopen(url)
         soup = BeautifulSoup(page.read())
         # favicon_links = soup.findAll("link", {'rel': ['icon', 'mask-icon', 'apple-touch-icon', 'shortcut icon',
@@ -125,23 +129,32 @@ def get_favicons(url, directory):
         if requests.head(url).status_code == 302:
             # redirect_url = requests.head(url).next.path_url
             redirect_url = requests.head(url, allow_redirects=True).url
-            get_favicons(redirect_url, directory)
+            get_favicon(redirect_url, directory)
 
     return total_favicons
 
 
-def get_favicons_selenium(driver1, directory):
+def get_favicon_selenium(driver1, directory):
+    """
+    Get favicons of the url given,
+    :param driver1: selenium driver with the url
+    :param directory: directory to store the favicon
+    :return: total favicon and list of favicon
+    """
     total_favicons = 0
     hash_list = []
+    rel = ""
     try:
         links = driver1.find_elements_by_tag_name('link')
-    except:
+    except Exception as e:
+        print("Error getting favicon from landing page with Exception \n %s" % e)
         return total_favicons
 
     for link in links:
         try:
             rel = link.get_attribute('rel')
-        except:
+        except Exception as e:
+            print("Error getting favicon links from landing page with Exception \n %s" % e)
             pass
         if 'icon' in rel:
             href = link.get_attribute('href')
@@ -176,34 +189,56 @@ def save_favicon_to_directory(icon, name, path):
             md5_hash = img_md5_hash(f)
             f.close()
             return md5_hash
-    except:
+    except Exception as e:
+        print("Error while saving favicon to the directory \n %s" % e)
+
         pass
 
 
 def create_directory(dir_name):
+    """
+    Create packages directory on the local machine
+    :param dir_name: directory path
+    :return:
+    """
     try:
         if not os.path.exists(dir_name):
             return os.makedirs(dir_name)
-    except:
-        print("ERROR creating %s Directory, Exiting the code" % dir_name)
+    except Exception as e:
+        print("ERROR creating %s Directory, Exiting the code" % dir_name, " | with Exception %s" % e)
         sys.exit(1)
 
 
 def img_md5_hash(image):
+    """
+    get md5 hash of an image
+    :param image:  image path or file
+    :return: md5 hash
+    """
     m = hashlib.md5(open(image.name, 'r').read())
-    hash = m.hexdigest()
-    return hash
+    img_hash = m.hexdigest()
+    return img_hash
 
 
-def is_url_html(contentType):
-    if 'text/html' in contentType:
+def is_url_html(content_type):
+    """
+    check if the page on the url is an html page or not
+    :param content_type:
+    :return: True if url is html else False
+    """
+    if 'text/html' in content_type or 'text/plain' in content_type:
         return True
     return False
 
 
 def get_og_domains(url_og_links):
+    """
+    Get all the domain associated with outgoing links in a single page
+    :param url_og_links: list of outgoing urls
+    :return: total outgoing domains and list of outgoing domains
+    """
     og_domains = []
-    md5_og_domains = []
+    # md5_og_domains = []
     for og_url in url_og_links:
         domain = get_md5_hash(get_url_domain(og_url))
         og_domains.append(domain)
@@ -214,6 +249,11 @@ def get_og_domains(url_og_links):
 
 
 def get_og_links(driver):
+    """
+    get outgoing links for landing page of the url
+    :param driver: selenium url driver
+    :return: total outgoing links and list of og links
+    """
     og_links = []
     total_og_links = 0
     try:
@@ -222,30 +262,42 @@ def get_og_links(driver):
             href = a_tag.get_attribute('href')
             og_links.append(href)
             total_og_links += 1
-    except:
+    except Exception as e:
+        print("Exceptions in getting outgoing links from the page %s" % e)
         pass
     return [total_og_links, og_links]
 
 
 def is_title_match(url_title, domain_title):
+    """
+    If title on the url and title on the domain is same
+    :param url_title:
+    :param domain_title:
+    :return:
+    """
     if url_title == domain_title:
         return True
     return False
 
 
 def main():
+    """
+    Main function to start extracting data from the url page
+    :return:
+    """
     PROJ_DIR = os.path.dirname(os.path.realpath(__file__))
     DATA_DIRECTORY = str(PROJ_DIR)+"/DATA/"
 
     # url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
-    url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
+    # url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
+    url = 'http://www.americanshipper.com/'
     domain = get_url_domain(url)
-    if not url.endswith('/'):
-        url += '/'
+    # if not url.endswith('/'):
+    #     url += '/'
     url_hash = get_md5_hash(url)
 
     options = Options()
-    options.set_headless(True)
+    options.headless = True
     driver = webdriver.Firefox(options=options)
 
     PACKAGE_DIRECTORY = DATA_DIRECTORY + url_hash+'/'
@@ -269,8 +321,8 @@ def main():
     url_isHtml = is_url_html(url_content_type)
     url_total_og_urls, url_og_urls_list = get_og_links(driver)
     url_total_og_domains, url_og_domains = get_og_domains(url_og_urls_list)
-    url_total_favicons, url_favicons = get_favicons_selenium(driver, URL_ICONS_DIRECTORY)
-
+    url_total_favicon, url_favicon = get_favicon_selenium(driver, URL_ICONS_DIRECTORY)
+    # *** Domain Attributes **** #
     driver.get(domain)
     domain_title = get_page_title(driver)
     domain_total_og_urls, domain_og_urls_list = get_og_links(driver)
@@ -279,7 +331,7 @@ def main():
     domain_isHtml = is_url_html(domain_content_type)
     if domain != url:
         # driver.get(domain)
-        domain_total_favicons, domain_favicons = get_favicons_selenium(driver, DOMAIN_ICONS_DIRECTORY)
+        domain_total_favicons, domain_favicons = get_favicon_selenium(driver, DOMAIN_ICONS_DIRECTORY)
     else:
         domain_total_favicons = 0
         domain_favicons = ''
@@ -295,10 +347,10 @@ def main():
         'url_md5': get_md5_hash(url),
         'url_base64': get_base64(url),
         'url_page_title': url_title,
-        'url_favicons': url_favicons,
+        'url_favicon': url_favicon,
         'url_isHtml': url_isHtml,
         'url_content_type': url_content_type,
-        'url_total_favicons': url_total_favicons,
+        'url_total_favicon': url_total_favicon,
         'url_og_domains': url_og_domains,
         'url_total_og_domains': domain_total_og_domains,
         'url_total_og_urls': url_total_og_urls,
@@ -307,10 +359,10 @@ def main():
         'domain_md5': get_md5_hash(domain),
         'domain_base64': get_base64(domain),
         'domain_page_title': domain_title,
-        'domain_favicons': domain_favicons,
+        'domain_favicon': domain_favicons,
         'domain_isHtml': domain_isHtml,
         'domain_content_type': get_content_type(domain),
-        'domain_total_favicons': domain_total_favicons,
+        'domain_total_favicon': domain_total_favicons,
         'domain_og_domains': domain_og_domains,
         'domain_total_og_domains': domain_total_og_domains,
         'domain_total_og_urls': domain_total_og_urls,
@@ -323,9 +375,9 @@ def main():
 
 
 if __name__ == '__main__':
+
     start = datetime.now()
     data = main()
-    print(data)
     print(json.dumps(data, indent=6, sort_keys=True))
     now = datetime.now()
     total_time = start-now
