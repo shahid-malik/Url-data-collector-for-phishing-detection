@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import shutil
+import json
 import sys
 import os
 from datetime import datetime
@@ -8,8 +9,13 @@ from urlparse import urlparse
 import urllib2
 import lxml.html
 import requests
+import hashlib
+# import Image
+from PIL import Image
 from BeautifulSoup import BeautifulSoup
+from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
+
 
 def get_content_type(url):
     """
@@ -59,60 +65,28 @@ def get_url_domain(url):
     :param url:
     :return: landing domain of url(string)
     """
-    parsed_uri = urlparse(url)
-    domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+    try:
+        if url is not None:
+            parsed_uri = urlparse(url)
+            domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+    except Exception as e:
+        domain = ''
     return domain
 
-
-def get_page_title(url):
+def get_page_title(driver):
     """
     Get the title of the page hit by  given url, provide processed urls with the http or https protocol
     :param url:
     :return: title (string)
     """
-    soup = BeautifulSoup(urllib2.urlopen(url))
+    # soup = BeautifulSoup(urllib2.urlopen(url))
     try:
-        title = soup.title.string
+        # title = soup.title.string
+        title = driver.title
     except:
         title = ''
 
     return title
-
-
-# def get_favicons(url):
-#     HEADERS = {
-#         'User-Agent': 'urllib2 (Python %s)' % sys.version.split()[0],
-#         'Connection': 'close',
-#     }
-#
-#     path = 'favicon.ico'
-#     alt_icon_path = 'alticon.ico'
-#
-#     if not url.endswith('/'):
-#         url += '/'
-#
-#     request = urllib2.Request(url+'favicon.ico', headers=HEADERS)
-#     try:
-#         icon = urllib2.urlopen(request).read()
-#     except:
-#         request = urllib2.Request(url, headers=HEADERS)
-#         try:
-#             content = urllib2.urlopen(request).read(4096)
-#         except:
-#             shutil.copyfile(alt_icon_path, path)
-#             return
-#         icon_path = lxml.html.fromstring(x).xpath(
-#             '//link[@rel="icon" or @rel="shortcut icon"]/@href'
-#         )
-#         if icon_path:
-#             request= urllib2.Request(url+icon_path[:1], headers=HEADERS)
-#             try:
-#                 icon = urllib2.Request(request).read()
-#             except(urllib2.HTTPError, urllib2.URLError):
-#                 shutil.copyfile(alt_icon_path, path)
-#                 return
-#     open(path, 'wb').write(icon)
-
 
 
 def get_favicons(url, directory):
@@ -158,9 +132,17 @@ def get_favicons(url, directory):
 
 def get_favicons_selenium(driver1, directory):
     total_favicons = 0
-    links = driver1.find_elements_by_tag_name('link')
+    hash_list = []
+    try:
+        links = driver1.find_elements_by_tag_name('link')
+    except:
+        return total_favicons
+
     for link in links:
-        rel = link.get_attribute('rel')
+        try:
+            rel = link.get_attribute('rel')
+        except:
+            pass
         if 'icon' in rel:
             href = link.get_attribute('href')
 
@@ -169,10 +151,14 @@ def get_favicons_selenium(driver1, directory):
                 name = 'favicon_{}.ico'.format(total_favicons)
             else:
                 name = 'favicon_{}.{}'.format(total_favicons, favicon_ext)
+
             icon = urllib2.urlopen(str(href))
-            save_favicon_to_directory(icon, name, path=directory)
+            # md5_hash = img_md5_hash(icon)
+            # hash_list.append(md5_hash)
+            md5_hash = save_favicon_to_directory(icon, name, path=directory)
+            hash_list.append(md5_hash)
             total_favicons += 1
-    return total_favicons
+    return [total_favicons, hash_list]
 
 
 def save_favicon_to_directory(icon, name, path):
@@ -187,6 +173,9 @@ def save_favicon_to_directory(icon, name, path):
     try:
         with open(name, "wb") as f:
             f.write(icon.read())
+            md5_hash = img_md5_hash(f)
+            f.close()
+            return md5_hash
     except:
         pass
 
@@ -200,15 +189,64 @@ def create_directory(dir_name):
         sys.exit(1)
 
 
+def img_md5_hash(image):
+    m = hashlib.md5(open(image.name, 'r').read())
+    hash = m.hexdigest()
+    return hash
+
+
+def is_url_html(contentType):
+    if 'text/html' in contentType:
+        return True
+    return False
+
+
+def get_og_domains(url_og_links):
+    og_domains = []
+    md5_og_domains = []
+    for og_url in url_og_links:
+        domain = get_md5_hash(get_url_domain(og_url))
+        og_domains.append(domain)
+    unique_og_domains = set(og_domains)
+    total_unique_og_domains = len(unique_og_domains)
+    unique_og_domains = ",".join(unique_og_domains)
+    return [total_unique_og_domains, unique_og_domains]
+
+
+def get_og_links(driver):
+    og_links = []
+    total_og_links = 0
+    try:
+        a_tags = driver.find_elements_by_tag_name('a')
+        for a_tag in a_tags:
+            href = a_tag.get_attribute('href')
+            og_links.append(href)
+            total_og_links += 1
+    except:
+        pass
+    return [total_og_links, og_links]
+
+
+def is_title_match(url_title, domain_title):
+    if url_title == domain_title:
+        return True
+    return False
+
+
 def main():
     PROJ_DIR = os.path.dirname(os.path.realpath(__file__))
     DATA_DIRECTORY = str(PROJ_DIR)+"/DATA/"
 
-    url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
+    # url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
+    url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
+    domain = get_url_domain(url)
+    if not url.endswith('/'):
+        url += '/'
     url_hash = get_md5_hash(url)
 
-    driver = webdriver.Firefox()
-    driver.get(url)
+    options = Options()
+    options.set_headless(True)
+    driver = webdriver.Firefox(options=options)
 
     PACKAGE_DIRECTORY = DATA_DIRECTORY + url_hash+'/'
     DOMAIN_DIRECTORY = PACKAGE_DIRECTORY + 'domain/'
@@ -222,31 +260,73 @@ def main():
     create_directory(URL_DIRECTORY)
     create_directory(URL_ICONS_DIRECTORY)
 
-    print(get_favicons_selenium(driver, URL_ICONS_DIRECTORY))
-    domain = get_url_domain(url)
-    driver.get(domain)
-    print(get_favicons_selenium(driver, DOMAIN_ICONS_DIRECTORY))
+    driver.get(url)
+    landing_url = driver.current_url
+    landing_url_hash = get_md5_hash(landing_url)
+    landing_url_base64 = get_base64(landing_url)
+    url_title = get_page_title(driver)
+    url_content_type = get_content_type(url)
+    url_isHtml = is_url_html(url_content_type)
+    url_total_og_urls, url_og_urls_list = get_og_links(driver)
+    url_total_og_domains, url_og_domains = get_og_domains(url_og_urls_list)
+    url_total_favicons, url_favicons = get_favicons_selenium(driver, URL_ICONS_DIRECTORY)
 
-    # data_obj = {
-    #     # Url attributes
-    #     'url': url,
-    #     'url_content_type': get_content_type(url),
-    #     'url_md5': get_md5_hash(url),
-    #     'url_base64': get_base64(url),
-    #     'url_page_title': get_page_title(url),
-    #     # domain attributes
-    #     'domain': domain,
-    #     'domain_content_type': get_content_type(domain),
-    #     'domain_md5': get_md5_hash(domain),
-    #     'domain_base64': get_base64(domain),
-    #     'domain_page_title': get_page_title(domain)
-    # }
-    # return data_obj
+    driver.get(domain)
+    domain_title = get_page_title(driver)
+    domain_total_og_urls, domain_og_urls_list = get_og_links(driver)
+    domain_total_og_domains, domain_og_domains = get_og_domains(domain_og_urls_list)
+    domain_content_type = get_content_type(domain)
+    domain_isHtml = is_url_html(domain_content_type)
+    if domain != url:
+        # driver.get(domain)
+        domain_total_favicons, domain_favicons = get_favicons_selenium(driver, DOMAIN_ICONS_DIRECTORY)
+    else:
+        domain_total_favicons = 0
+        domain_favicons = ''
+
+    title_match = is_title_match(url_title, domain_title)
+
+    driver.stop_client()
+    driver.close()
+
+    data_obj = {
+        # Url attributes
+        'url': url,
+        'url_md5': get_md5_hash(url),
+        'url_base64': get_base64(url),
+        'url_page_title': url_title,
+        'url_favicons': url_favicons,
+        'url_isHtml': url_isHtml,
+        'url_content_type': url_content_type,
+        'url_total_favicons': url_total_favicons,
+        'url_og_domains': url_og_domains,
+        'url_total_og_domains': domain_total_og_domains,
+        'url_total_og_urls': url_total_og_urls,
+
+        'domain': domain,
+        'domain_md5': get_md5_hash(domain),
+        'domain_base64': get_base64(domain),
+        'domain_page_title': domain_title,
+        'domain_favicons': domain_favicons,
+        'domain_isHtml': domain_isHtml,
+        'domain_content_type': get_content_type(domain),
+        'domain_total_favicons': domain_total_favicons,
+        'domain_og_domains': domain_og_domains,
+        'domain_total_og_domains': domain_total_og_domains,
+        'domain_total_og_urls': domain_total_og_urls,
+
+        'landing_url_hash': landing_url_hash,
+        'landing_url_base64': landing_url_base64,
+        'title_match': title_match
+    }
+    return data_obj
+
 
 if __name__ == '__main__':
     start = datetime.now()
     data = main()
-    # print(json.dumps(data, indent=6, sort_keys=True))
+    print(data)
+    print(json.dumps(data, indent=6, sort_keys=True))
     now = datetime.now()
     total_time = start-now
     print(total_time, float(total_time.microseconds/100000))
