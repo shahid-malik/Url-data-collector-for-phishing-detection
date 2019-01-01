@@ -9,6 +9,9 @@ from urlparse import urlparse
 import urllib2
 import requests
 import hashlib
+import magic
+import mimetypes
+import urllib
 # import Image
 from BeautifulSoup import BeautifulSoup
 from selenium.webdriver.firefox.options import Options
@@ -280,6 +283,22 @@ def is_title_match(url_title, domain_title):
     return False
 
 
+def get_file_type(url):
+    """
+    Get the file type of the landing page on url
+    :param url:
+    :return:
+    """
+    mime = magic.Magic(mime=True)
+    output = "output"
+    try:
+        urllib.urlretrieve(url, output)
+        mimes = mime.from_file(output)
+        return mimes
+    except:
+        pass
+
+
 def main():
     """
     Main function to start extracting data from the url page
@@ -288,9 +307,10 @@ def main():
     PROJ_DIR = os.path.dirname(os.path.realpath(__file__))
     DATA_DIRECTORY = str(PROJ_DIR)+"/DATA/"
 
-    # url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
+    url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
     # url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
-    url = 'http://www.americanshipper.com/'
+    # url = 'http://www.americanshipper.com/'
+    # url = 'http://media.mtvnservices.com/edge/bento/miso.1.4.17.swf'
     domain = get_url_domain(url)
     # if not url.endswith('/'):
     #     url += '/'
@@ -298,7 +318,7 @@ def main():
 
     options = Options()
     options.headless = True
-    driver = webdriver.Firefox(options=options)
+    driver = webdriver.Chrome(options=options)
 
     PACKAGE_DIRECTORY = DATA_DIRECTORY + url_hash+'/'
     DOMAIN_DIRECTORY = PACKAGE_DIRECTORY + 'domain/'
@@ -322,6 +342,9 @@ def main():
     url_total_og_urls, url_og_urls_list = get_og_links(driver)
     url_total_og_domains, url_og_domains = get_og_domains(url_og_urls_list)
     url_total_favicon, url_favicon = get_favicon_selenium(driver, URL_ICONS_DIRECTORY)
+    url_file_type = get_file_type(url)
+    url_isHtml = is_url_html(url_content_type)
+
     # *** Domain Attributes **** #
     driver.get(domain)
     domain_title = get_page_title(driver)
@@ -329,12 +352,13 @@ def main():
     domain_total_og_domains, domain_og_domains = get_og_domains(domain_og_urls_list)
     domain_content_type = get_content_type(domain)
     domain_isHtml = is_url_html(domain_content_type)
+    domain_file_type = get_file_type(domain)
     if domain != url:
         # driver.get(domain)
         domain_total_favicons, domain_favicons = get_favicon_selenium(driver, DOMAIN_ICONS_DIRECTORY)
     else:
-        domain_total_favicons = 0
-        domain_favicons = ''
+        domain_total_favicons = url_total_favicon
+        domain_favicons = url_favicon
 
     title_match = is_title_match(url_title, domain_title)
 
@@ -354,6 +378,8 @@ def main():
         'url_og_domains': url_og_domains,
         'url_total_og_domains': domain_total_og_domains,
         'url_total_og_urls': url_total_og_urls,
+        'url_is_html': url_isHtml,
+        'url_file_type': url_file_type,
 
         'domain': domain,
         'domain_md5': get_md5_hash(domain),
@@ -366,7 +392,7 @@ def main():
         'domain_og_domains': domain_og_domains,
         'domain_total_og_domains': domain_total_og_domains,
         'domain_total_og_urls': domain_total_og_urls,
-
+        'domain_file_type': domain_file_type,
         'landing_url_hash': landing_url_hash,
         'landing_url_base64': landing_url_base64,
         'title_match': title_match
