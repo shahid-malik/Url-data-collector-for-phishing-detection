@@ -2,20 +2,25 @@ import mysql.connector
 # import pymysql
 import sys
 import os
-
+import socket
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 import config
 
 
 def connect_db(db_name):
-    if db_name != config.LOCAL_DATABASE_CONFIG['dbname']:
+    if socket.gethostbyname(socket.gethostname()) == '127.0.1.1':
+        DATABASE_CONFIG = config.LOCAL_DATABASE_CONFIG
+    else:
+        DATABASE_CONFIG = config.PROD_DATABASE_CONFIG
+
+    if db_name != DATABASE_CONFIG['dbname']:
         raise ValueError("Could not find DB with given name")
 
     con = mysql.connector.connect(
-        host=config.LOCAL_DATABASE_CONFIG['host'],
-        user=config.LOCAL_DATABASE_CONFIG['user'],
-        password=config.LOCAL_DATABASE_CONFIG['password'],
-        db=config.LOCAL_DATABASE_CONFIG['dbname']
+        host=DATABASE_CONFIG['host'],
+        user=DATABASE_CONFIG['user'],
+        password=DATABASE_CONFIG['password'],
+        db=DATABASE_CONFIG['dbname']
     )
     return con
 
@@ -108,12 +113,12 @@ if __name__ == "__main__":
     DATA_TABLE = "package_features"
     COLUMN_NAME = "test"
     DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(255), url_title varchar(255), " \
-                       "url_favicons varchar(255), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
-                       "url_total_favicon varchar(255), url_og_domains varchar(35000), 	url_total_og_domains varchar(" \
+                       "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
+                       "url_total_favicon varchar(255), url_og_domains varchar(15000), 	url_total_og_domains varchar(" \
                        "255), url_total_og_links varchar(255), 	url_file_type varchar(255), domain_md5 varchar(255)," \
-                       "domain_base64 varchar(255),domain_title varchar(255), domain_favicons varchar(255),	" \
+                       "domain_base64 varchar(255),domain_title varchar(255), domain_favicons varchar(5000),	" \
                        "domain_is_html varchar(255),domain_content_type varchar(255),	domain_total_favicon varchar(" \
-                       "255), domain_og_domains varchar(35000), domain_total_og_domains varchar(255)," \
+                       "255), domain_og_domains varchar(15000), domain_total_og_domains varchar(255)," \
                        "domain_total_og_links varchar(255), domain_file_type varchar(255),landing_url_hash " \
                        "varchar(255), landing_url_base64 varchar(255), title_match varchar(255)) " % DATA_TABLE
 

@@ -8,8 +8,8 @@ LOCAL_DATABASE_CONFIG = {
 
 
 PROD_DATABASE_CONFIG = {
-    'host': '10.0.8.97',
-    'dbname':   'headless',
+    'host': 'localhost',
+    'dbname':   'b_classifier',
     'user': 'root',
     'password': '12345',
     'port': 3306
