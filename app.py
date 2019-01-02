@@ -10,12 +10,13 @@ import urllib2
 import requests
 import hashlib
 import magic
-import mimetypes
+# import mimetypes
 import urllib
 # import Image
 from BeautifulSoup import BeautifulSoup
 from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
+from db import insert_data
 
 
 def get_content_type(url):
@@ -62,21 +63,23 @@ def get_base64(url):
     return b64_encoded
 
 
-def get_url_domain(url):
+def get_url_domain_n_path(url):
     """
     Get the main domain of the url provided
     :param url:
     :return: landing domain of url(string)
     """
     domain = ''
+    path = ''
     try:
         if url is not None:
             parsed_uri = urlparse(url)
             domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+            path = parsed_uri.path
     except Exception as e:
         print("Exception in getting domain from given url with exception %s" % e)
         pass
-    return domain
+    return domain, path
 
 
 def get_page_title(driver):
@@ -174,6 +177,7 @@ def get_favicon_selenium(driver1, directory):
             md5_hash = save_favicon_to_directory(icon, name, path=directory)
             hash_list.append(md5_hash)
             total_favicons += 1
+    hash_list = ",".join(hash_list)
     return [total_favicons, hash_list]
 
 
@@ -243,7 +247,7 @@ def get_og_domains(url_og_links):
     og_domains = []
     # md5_og_domains = []
     for og_url in url_og_links:
-        domain = get_md5_hash(get_url_domain(og_url))
+        domain = get_md5_hash(get_url_domain_n_path(og_url)[0])
         og_domains.append(domain)
     unique_og_domains = set(og_domains)
     total_unique_og_domains = len(unique_og_domains)
@@ -307,11 +311,12 @@ def main():
     PROJ_DIR = os.path.dirname(os.path.realpath(__file__))
     DATA_DIRECTORY = str(PROJ_DIR)+"/DATA/"
 
-    url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
-    # url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
+    # url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
+    url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
     # url = 'http://www.americanshipper.com/'
     # url = 'http://media.mtvnservices.com/edge/bento/miso.1.4.17.swf'
-    domain = get_url_domain(url)
+    domain = get_url_domain_n_path(url)[0]
+    path = get_url_domain_n_path(url)[1]
     # if not url.endswith('/'):
     #     url += '/'
     url_hash = get_md5_hash(url)
@@ -338,7 +343,6 @@ def main():
     landing_url_base64 = get_base64(landing_url)
     url_title = get_page_title(driver)
     url_content_type = get_content_type(url)
-    url_isHtml = is_url_html(url_content_type)
     url_total_og_urls, url_og_urls_list = get_og_links(driver)
     url_total_og_domains, url_og_domains = get_og_domains(url_og_urls_list)
     url_total_favicon, url_favicon = get_favicon_selenium(driver, URL_ICONS_DIRECTORY)
@@ -371,13 +375,13 @@ def main():
         'url_md5': get_md5_hash(url),
         'url_base64': get_base64(url),
         'url_page_title': url_title,
-        'url_favicon': url_favicon,
+        'url_favicons': url_favicon,
         'url_isHtml': url_isHtml,
         'url_content_type': url_content_type,
         'url_total_favicon': url_total_favicon,
         'url_og_domains': url_og_domains,
         'url_total_og_domains': domain_total_og_domains,
-        'url_total_og_urls': url_total_og_urls,
+        'url_total_og_links': url_total_og_urls,
         'url_is_html': url_isHtml,
         'url_file_type': url_file_type,
 
@@ -385,17 +389,19 @@ def main():
         'domain_md5': get_md5_hash(domain),
         'domain_base64': get_base64(domain),
         'domain_page_title': domain_title,
-        'domain_favicon': domain_favicons,
+        'domain_favicons': domain_favicons,
         'domain_isHtml': domain_isHtml,
         'domain_content_type': get_content_type(domain),
         'domain_total_favicon': domain_total_favicons,
         'domain_og_domains': domain_og_domains,
         'domain_total_og_domains': domain_total_og_domains,
-        'domain_total_og_urls': domain_total_og_urls,
+        'domain_total_og_links': domain_total_og_urls,
         'domain_file_type': domain_file_type,
         'landing_url_hash': landing_url_hash,
         'landing_url_base64': landing_url_base64,
-        'title_match': title_match
+        'title_match': title_match,
+        'uri_length': len(path),
+        'url_length': len(url)
     }
     return data_obj
 
@@ -404,7 +410,10 @@ if __name__ == '__main__':
 
     start = datetime.now()
     data = main()
-    print(json.dumps(data, indent=6, sort_keys=True))
+    # print(json.dumps(data, indent=6, sort_keys=True))
+    DATA_TABLE = "package_features"
+
+    insert_data(DATA_TABLE, data)
     now = datetime.now()
     total_time = start-now
-    print(total_time, float(total_time.microseconds/100000))
+    print(total_time, float(total_time.microseconds/1000000))

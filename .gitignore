@@ -5,3 +5,4 @@ test2.py
 geckodriver.log
 output.html
 output*
+*.pyc
