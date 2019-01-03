@@ -314,16 +314,22 @@ def main():
     # url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
     # url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
     # url = 'http://www.americanshipper.com/'
-    url = 'http://media.mtvnservices.com/edge/bento/miso.1.4.17.swf'
+    # url = 'http://media.mtvnservices.com/edge/bento/miso.1.4.17.swf'
+    url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_linux64.zip'
     domain = get_url_domain_n_path(url)[0]
     path = get_url_domain_n_path(url)[1]
     # if not url.endswith('/'):
     #     url += '/'
     url_hash = get_md5_hash(url)
 
+    # options = Options()
+    # options.set_headless(True)
+    # driver = webdriver.Chrome(options=options)
+
     options = Options()
-    options.set_headless(True)
-    driver = webdriver.Chrome(options=options)
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')  # Last I checked this was necessary.
+    driver = webdriver.Chrome(chrome_options=options)
 
     PACKAGE_DIRECTORY = DATA_DIRECTORY + url_hash+'/'
     DOMAIN_DIRECTORY = PACKAGE_DIRECTORY + 'domain/'
