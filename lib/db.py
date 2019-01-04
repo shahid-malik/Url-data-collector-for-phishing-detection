@@ -7,14 +7,14 @@ sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib')
 import config
 
 
-def connect_db(db_name):
+def connect_db():
     if socket.gethostbyname(socket.gethostname()) == '127.0.1.1':
         DATABASE_CONFIG = config.LOCAL_DATABASE_CONFIG
     else:
         DATABASE_CONFIG = config.PROD_DATABASE_CONFIG
-
-    if db_name != DATABASE_CONFIG['dbname']:
-        raise ValueError("Could not find DB with given name")
+    #
+    # if db_name != DATABASE_CONFIG['dbname']:
+    #     raise ValueError("Could not find DB with given name")
 
     con = mysql.connector.connect(
         host=DATABASE_CONFIG['host'],
@@ -49,7 +49,7 @@ def add_column(con, table, col_name):
 
 
 def insert_data(table, data_dict):
-    con = connect_db("headless")
+    con = connect_db()
     data_insertion_query = "insert into %s (url_md5, url_base64, url_title, url_favicons, url_is_html, " \
                            "url_content_type, url_total_favicon, url_og_domains, url_total_og_domains, " \
                            "url_total_og_links, url_file_type, domain_md5, domain_base64, domain_title, " \
@@ -90,10 +90,11 @@ def insert_data(table, data_dict):
                               )
     query_status = execute_query(con, data_insertion_query)
     if query_status:
-        print("Data Inserted Successfully")
+        print("  ----- Data Inserted Successfully  ...... ***** ")
+
 
 def main():
-    conn = connect_db("headless")
+    conn = connect_db()
     DATA_TABLE = "package_features"
     data = {'url_md5': 'test', 'url_base64': 'test', 'url_title': 'test', 'url_favicons': 'test',
             'url_is_html': 'test', 'url_content_type': 'test', 'url_total_favicon': 'test', 'url_og_domains': 'test',
@@ -112,14 +113,14 @@ def main():
 if __name__ == "__main__":
     DATA_TABLE = "package_features"
     COLUMN_NAME = "test"
-    DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(255), url_title varchar(255), " \
+    DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(1000), url_title varchar(255), " \
                        "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
                        "url_total_favicon varchar(255), url_og_domains varchar(15000), 	url_total_og_domains varchar(" \
                        "255), url_total_og_links varchar(255), 	url_file_type varchar(255), domain_md5 varchar(255)," \
-                       "domain_base64 varchar(255),domain_title varchar(255), domain_favicons varchar(5000),	" \
+                       "domain_base64 varchar(1000),domain_title varchar(255), domain_favicons varchar(5000),	" \
                        "domain_is_html varchar(255),domain_content_type varchar(255),	domain_total_favicon varchar(" \
                        "255), domain_og_domains varchar(15000), domain_total_og_domains varchar(255)," \
                        "domain_total_og_links varchar(255), domain_file_type varchar(255),landing_url_hash " \
-                       "varchar(255), landing_url_base64 varchar(255), title_match varchar(255)) " % DATA_TABLE
+                       "varchar(255), landing_url_base64 varchar(1000), title_match varchar(255)) " % DATA_TABLE
 
     main()

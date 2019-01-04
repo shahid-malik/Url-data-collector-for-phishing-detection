@@ -16,7 +16,7 @@ import urllib
 from BeautifulSoup import BeautifulSoup
 from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
-from db import insert_data
+from lib import api, db
 
 
 def get_content_type(url):
@@ -28,7 +28,7 @@ def get_content_type(url):
     try:
         content_type = requests.head(url).headers["Content-Type"]
     except Exception as e:
-        print("Error getting favicon from landing page with Exception \n %s" % e)
+        print("Error getting favicon from landing page with Exception \n url is %s %s" %(url, e))
         content_type = ''
     return content_type
 
@@ -162,21 +162,24 @@ def get_favicon_selenium(driver1, directory):
         except Exception as e:
             print("Error getting favicon links from landing page with Exception \n %s" % e)
             pass
+
         if 'icon' in rel:
             href = link.get_attribute('href')
-
             favicon_ext = href.split('.')[-1]
             if not favicon_ext == 'svg':
                 name = 'favicon_{}.ico'.format(total_favicons)
             else:
                 name = 'favicon_{}.{}'.format(total_favicons, favicon_ext)
+            try:
+                icon = urllib2.urlopen(str(href))
+                # md5_hash = img_md5_hash(icon)
+                # hash_list.append(md5_hash)
+                md5_hash = save_favicon_to_directory(icon, name, path=directory)
+                hash_list.append(md5_hash)
+                total_favicons += 1
+            except Exception as e:
+                pass
 
-            icon = urllib2.urlopen(str(href))
-            # md5_hash = img_md5_hash(icon)
-            # hash_list.append(md5_hash)
-            md5_hash = save_favicon_to_directory(icon, name, path=directory)
-            hash_list.append(md5_hash)
-            total_favicons += 1
     hash_list = ",".join(hash_list)
     return [total_favicons, hash_list]
 
@@ -315,7 +318,11 @@ def main():
     # url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
     # url = 'http://www.americanshipper.com/'
     # url = 'http://media.mtvnservices.com/edge/bento/miso.1.4.17.swf'
-    url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_linux64.zip'
+    # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_linux64.zip'
+    # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_mac64.zip'
+    # url = 'https://www.silointhecity.com/'
+    url = api.get_url()
+    print(" ***** Processing %s  ***** " % url)
     domain = get_url_domain_n_path(url)[0]
     path = get_url_domain_n_path(url)[1]
     # if not url.endswith('/'):
@@ -326,10 +333,16 @@ def main():
     # options.set_headless(True)
     # driver = webdriver.Chrome(options=options)
 
-    options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')  # Last I checked this was necessary.
-    driver = webdriver.Chrome(chrome_options=options)
+    # options = Options()
+    # options.add_argument('--headless')
+    # options.add_argument('--disable-gpu')  # Last I checked this was necessary.
+    # driver = webdriver.Chrome(chrome_options=options)
+
+    print("  -----  Starting headless browser   ***** ")
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-extensions')
+    driver = webdriver.Chrome(chrome_options=chrome_options)
 
     PACKAGE_DIRECTORY = DATA_DIRECTORY + url_hash+'/'
     DOMAIN_DIRECTORY = PACKAGE_DIRECTORY + 'domain/'
@@ -342,7 +355,7 @@ def main():
     create_directory(DOMAIN_ICONS_DIRECTORY)
     create_directory(URL_DIRECTORY)
     create_directory(URL_ICONS_DIRECTORY)
-
+    print("  -----  Package Created  ***** ")
     driver.get(url)
     landing_url = driver.current_url
     landing_url_hash = get_md5_hash(landing_url)
@@ -354,7 +367,7 @@ def main():
     url_total_favicon, url_favicon = get_favicon_selenium(driver, URL_ICONS_DIRECTORY)
     url_file_type = get_file_type(url)
     url_isHtml = is_url_html(url_content_type)
-
+    print("  ----- Url Attributes Done ...... ***** ")
     # *** Domain Attributes **** #
     driver.get(domain)
     domain_title = get_page_title(driver)
@@ -364,16 +377,16 @@ def main():
     domain_isHtml = is_url_html(domain_content_type)
     domain_file_type = get_file_type(domain)
     if domain != url:
-        # driver.get(domain)
         domain_total_favicons, domain_favicons = get_favicon_selenium(driver, DOMAIN_ICONS_DIRECTORY)
     else:
         domain_total_favicons = url_total_favicon
         domain_favicons = url_favicon
 
+    print("  ----- Domain Attributes Done ...... ***** ")
     title_match = is_title_match(url_title, domain_title)
-
     driver.stop_client()
     driver.close()
+    print("  ----- Stop Chrome headless  ...... ***** ")
 
     data_obj = {
         # Url attributes
@@ -413,13 +426,12 @@ def main():
 
 
 if __name__ == '__main__':
-
-    start = datetime.now()
-    data = main()
-    # print(json.dumps(data, indent=6, sort_keys=True))
     DATA_TABLE = "package_features"
 
-    insert_data(DATA_TABLE, data)
-    now = datetime.now()
-    total_time = start-now
-    print(total_time, float(total_time.microseconds/1000000))
+    while(1):
+        start = datetime.now()
+        data = main()
+        # print(json.dumps(data, indent=6, sort_keys=True))
+        db.insert_data(DATA_TABLE, data)
+        total_time = start-datetime.now()
+        print("Total Time Spent  ", float(total_time.microseconds/100000))
