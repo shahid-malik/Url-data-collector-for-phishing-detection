@@ -367,7 +367,7 @@ def main():
     url_total_favicon, url_favicon = get_favicon_selenium(driver, URL_ICONS_DIRECTORY)
     url_file_type = get_file_type(url)
     url_isHtml = is_url_html(url_content_type)
-    print("  ----- Url Attributes Done ...... ***** ")
+    print("  -----  Url Attributes Done ...... ***** ")
     # *** Domain Attributes **** #
     driver.get(domain)
     domain_title = get_page_title(driver)
@@ -382,11 +382,11 @@ def main():
         domain_total_favicons = url_total_favicon
         domain_favicons = url_favicon
 
-    print("  ----- Domain Attributes Done ...... ***** ")
+    print("  -----  Domain Attributes Done ...... ***** ")
     title_match = is_title_match(url_title, domain_title)
     driver.stop_client()
     driver.close()
-    print("  ----- Stop Chrome headless  ...... ***** ")
+    print("  -----  Stop Chrome headless  ...... ***** ")
 
     data_obj = {
         # Url attributes
@@ -429,9 +429,12 @@ if __name__ == '__main__':
     DATA_TABLE = "package_features"
 
     while(1):
-        start = datetime.now()
-        data = main()
-        # print(json.dumps(data, indent=6, sort_keys=True))
-        db.insert_data(DATA_TABLE, data)
-        total_time = start-datetime.now()
-        print("Total Time Spent  ", float(total_time.microseconds/100000))
+        try:
+            start = datetime.now()
+            data = main()
+            # print(json.dumps(data, indent=6, sort_keys=True))
+            db.insert_data(DATA_TABLE, data)
+            total_time = start-datetime.now()
+            print("Total Time Spent  ", float(total_time.microseconds/100000))
+        except:
+            pass
