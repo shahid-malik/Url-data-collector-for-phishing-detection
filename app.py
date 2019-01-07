@@ -367,8 +367,8 @@ def main():
     create_directory(URL_DIRECTORY)
     create_directory(URL_ICONS_DIRECTORY)
     print("  -----  Package Created  ...... ")
+    retry = 0
     while True:
-        retry = 0
         try:
             driver.get(url)
             url_entropy = get_entropy(url)
@@ -392,9 +392,8 @@ def main():
         else:
             break
     print("  -----  Url Attributes Done  ...... ")
-
+    retry = 0
     while True:
-        retry = 0
         try:
             driver.get(domain)
             domain_entropy = get_entropy(domain)
