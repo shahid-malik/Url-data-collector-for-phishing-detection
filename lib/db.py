@@ -90,7 +90,7 @@ def insert_data(table, data_dict):
                               )
     query_status = execute_query(con, data_insertion_query)
     if query_status:
-        print("  -----  Data Inserted Successfully  ...... ***** ")
+        print("  -----  Data Inserted Successfully  ...... ")
 
 
 def main():
