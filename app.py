@@ -316,7 +316,7 @@ def get_entropy(string, base=2.0):
     return H
 
 
-def main():
+def main(driver):
     """
     Main function to start extracting data from the url page
     :return:
@@ -332,8 +332,8 @@ def main():
     # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_mac64.zip'
     # url = 'http://mahdijamnqatar.com/home/D7298292/mao'
     # url = 'https://www.nemanjaarnautovicinc.com/ZT0iZW1haWwiIHJlcXVpcmVkIGNsYXNzPSJmb3JtLWNvbnRyb2wiIGlkPSJlbWFpbCIgbmFtZT0iZW1haWwiIHBsYWNlaG9sZGVyPSIiIHZhbHV/buttonabsa.png'
-    url = 'http://seemg.ir/wp-snapshots/US/Clients_Messages/122018/'
-    # url = api.get_url()
+    # url = 'http://seemg.ir/wp-snapshots/US/Clients_Messages/122018/'
+    url = api.get_url()
     url_hash = get_md5_hash(url)
     domain_title = ''
     url_title = ''
@@ -342,19 +342,6 @@ def main():
     path = get_url_domain_n_path(url)[1]
     # if not url.endswith('/'):
     #     url += '/'
-
-    print("  -----  Starting headless browser   ...... ")
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-extensions')
-    chrome_options.add_argument('--disable-safebrowsing')
-    chrome_options.add_argument('--disable-web-security')
-    chrome_options.add_argument('--allow-running-insecure-content')
-    chrome_options.add_argument('--allow-insecure-localhost')
-    chrome_options.add_argument('--disable-client-side-phishing-detection')
-    chrome_options.add_argument('--safebrowsing-disable-download-protection')
-    driver = webdriver.Chrome(chrome_options=chrome_options)
-    driver.set_page_load_timeout(20)
 
     PACKAGE_DIRECTORY = DATA_DIRECTORY + url_hash+'/'
     DOMAIN_DIRECTORY = PACKAGE_DIRECTORY + 'domain/'
@@ -372,7 +359,7 @@ def main():
     while True:
         try:
             driver.get(url)
-            url_entropy = get_entropy(url)
+            # url_entropy = get_entropy(url)
             landing_url = driver.current_url
             landing_url_hash = get_md5_hash(landing_url)
             landing_url_base64 = get_base64(landing_url)
@@ -386,7 +373,7 @@ def main():
         except TimeoutException:
             retry += 1
             print("  -----  Timeout, Retrying  ...... ")
-            if retry >= 1:
+            if retry >= 2:
                 print("  -------    Breaking the loop after 2 unsuccessful retry")
                 break
             continue
@@ -399,7 +386,7 @@ def main():
     while True:
         try:
             driver.get(domain)
-            domain_entropy = get_entropy(domain)
+            # domain_entropy = get_entropy(domain)
             domain_title = get_page_title(driver)
             domain_total_og_urls, domain_og_urls_list = get_og_links(driver)
             domain_total_og_domains, domain_og_domains = get_og_domains(domain_og_urls_list)
@@ -412,7 +399,7 @@ def main():
                 domain_total_favicons = url_total_favicon
                 domain_favicons = url_favicon
         except TimeoutException:
-            retry += 1
+            retry += 2
             print("  -----  Timeout, Retrying  ......")
             if retry >= 1:
                 print("  -------    Breaking the loop after 2 unsuccessful retry")
@@ -423,9 +410,6 @@ def main():
 
     print("  -----  Domain Attributes Done ...... ")
     title_match = is_title_match(url_title, domain_title)
-    driver.stop_client()
-    driver.close()
-    print("  -----  Stop Chrome headless  ......  ")
 
     data_obj = {
         # Url attributes
@@ -442,7 +426,7 @@ def main():
         'url_total_og_links': url_total_og_urls,
         'url_is_html': url_isHtml,
         'url_file_type': url_file_type,
-        'url_entropy': url_entropy,
+        # 'url_entropy': url_entropy,
 
         'domain': domain,
         'domain_md5': get_md5_hash(domain),
@@ -456,7 +440,7 @@ def main():
         'domain_total_og_domains': domain_total_og_domains,
         'domain_total_og_links': domain_total_og_urls,
         'domain_file_type': domain_file_type,
-        'domain_entropy': domain_entropy,
+        # 'domain_entropy': domain_entropy,
         'landing_url_hash': landing_url_hash,
         'landing_url_base64': landing_url_base64,
         'title_match': title_match,
@@ -469,13 +453,30 @@ def main():
 if __name__ == '__main__':
     DATA_TABLE = "package_features"
 
+    print("  -----  Starting headless browser   ...... ")
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--disable-extensions')
+    chrome_options.add_argument('--disable-safebrowsing')
+    chrome_options.add_argument('--disable-web-security')
+    chrome_options.add_argument('--allow-running-insecure-content')
+    chrome_options.add_argument('--allow-insecure-localhost')
+    chrome_options.add_argument('--disable-client-side-phishing-detection')
+    chrome_options.add_argument('--safebrowsing-disable-download-protection')
+    driver = webdriver.Chrome(chrome_options=chrome_options)
+    driver.set_page_load_timeout(50)
+
     while(1):
         try:
             start = datetime.now()
-            data = main()
+            data = main(driver)
             # print(json.dumps(data, indent=6, sort_keys=True))
             db.insert_data(DATA_TABLE, data)
             total_time = start-datetime.now()
             print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds/100000))
         except:
             pass
+
+    driver.stop_client()
+    driver.close()
+    print("  -----  Stop Chrome headless  ......  ")

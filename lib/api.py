@@ -4,7 +4,6 @@ import json
 requests.packages.urllib3.disable_warnings()
 
 
-
 def get_url():
     """
     Request a new url from remote server
