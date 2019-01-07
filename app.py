@@ -368,8 +368,8 @@ def main():
     create_directory(URL_ICONS_DIRECTORY)
     print("  -----  Package Created  ...... ")
     while True:
+        retry = 0
         try:
-            retry = 0
             driver.get(url)
             url_entropy = get_entropy(url)
             landing_url = driver.current_url
@@ -394,8 +394,8 @@ def main():
     print("  -----  Url Attributes Done  ...... ")
 
     while True:
+        retry = 0
         try:
-            retry = 0
             driver.get(domain)
             domain_entropy = get_entropy(domain)
             domain_title = get_page_title(driver)
@@ -413,6 +413,7 @@ def main():
             retry += 1
             print("  -----  Timeout, Retrying  ......")
             if retry >= 2:
+                print("Breaking the loop after 2 unsuccessful retry")
                 break
             continue
         else:
