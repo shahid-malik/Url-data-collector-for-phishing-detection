@@ -29,7 +29,7 @@ def get_content_type(url):
     :return: content type of a url
     """
     try:
-        content_type = requests.head(url, allow_redirects=True).headers["Content-Type"]
+        content_type = requests.head(url, allow_redirects=True, verify=False).headers["Content-Type"]
     except Exception as e:
         print("Error getting favicon from landing page")
         content_type = ''
