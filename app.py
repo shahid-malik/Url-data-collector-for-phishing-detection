@@ -331,7 +331,8 @@ def main():
     # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_linux64.zip'
     # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_mac64.zip'
     # url = 'http://mahdijamnqatar.com/home/D7298292/mao'
-    url = api.get_url()
+    url = 'https://www.nemanjaarnautovicinc.com/ZT0iZW1haWwiIHJlcXVpcmVkIGNsYXNzPSJmb3JtLWNvbnRyb2wiIGlkPSJlbWFpbCIgbmFtZT0iZW1haWwiIHBsYWNlaG9sZGVyPSIiIHZhbHV/buttonabsa.png'
+    # url = api.get_url()
     url_hash = get_md5_hash(url)
     domain_title = ''
     url_title = ''
@@ -368,6 +369,7 @@ def main():
     print("  -----  Package Created  ...... ")
     while True:
         try:
+            retry = 0
             driver.get(url)
             url_entropy = get_entropy(url)
             landing_url = driver.current_url
@@ -381,7 +383,11 @@ def main():
             url_file_type = get_file_type(url)
             url_isHtml = is_url_html(url_content_type)
         except TimeoutException:
+            retry += 1
             print("  -----  Timeout, Retrying  ...... ")
+            if retry >= 2:
+                print("Breaking the loop after 2 unsuccessful retry")
+                break
             continue
         else:
             break
@@ -389,6 +395,7 @@ def main():
 
     while True:
         try:
+            retry = 0
             driver.get(domain)
             domain_entropy = get_entropy(domain)
             domain_title = get_page_title(driver)
@@ -403,7 +410,10 @@ def main():
                 domain_total_favicons = url_total_favicon
                 domain_favicons = url_favicon
         except TimeoutException:
+            retry += 1
             print("  -----  Timeout, Retrying  ......")
+            if retry >= 2:
+                break
             continue
         else:
             break
