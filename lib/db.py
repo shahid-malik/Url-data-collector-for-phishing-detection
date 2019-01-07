@@ -1,4 +1,5 @@
 import mysql.connector
+from mysql.connector import MySQLConnection, Error
 # import pymysql
 import sys
 import os
@@ -91,6 +92,22 @@ def insert_data(table, data_dict):
     query_status = execute_query(con, data_insertion_query)
     if query_status:
         print("  -----  Data Inserted Successfully  ...... ")
+
+
+def check_if_url_processed(conn, url_hash):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM books")
+        rows = cursor.fetchall()
+        print('Total Row(s):', cursor.rowcount)
+        for row in rows:
+            print(row)
+    except Error as e:
+        print(e)
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def main():

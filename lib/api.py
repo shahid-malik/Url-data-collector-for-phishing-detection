@@ -1,5 +1,8 @@
 import requests
+import urllib2
 import json
+requests.packages.urllib3.disable_warnings()
+
 
 
 def get_url():
@@ -12,14 +15,21 @@ def get_url():
     api_url = '{}://{}/worker/getjob/'.format(protocol, server_ip)
 
     post_data = {'uname': 'snx', 'password': 'top4glory'}
-
     req = requests.post(api_url, post_data, verify=False)
     if req.status_code == 200:
-        return req.json()['url']
+        try:
+            code = urllib2.urlopen(req.json()['url']).code
+            if code:
+                return req.json()['url']
+        except Exception as e:
+            # print("into exception", e)
+            return get_url()
     else:
         get_url()
 
 
 if __name__ == '__main__':
-    url = get_url()
-    print(url)
+
+    while(1):
+        url = get_url()
+        print(url)

@@ -331,7 +331,8 @@ def main():
     # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_linux64.zip'
     # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_mac64.zip'
     # url = 'http://mahdijamnqatar.com/home/D7298292/mao'
-    url = 'https://www.nemanjaarnautovicinc.com/ZT0iZW1haWwiIHJlcXVpcmVkIGNsYXNzPSJmb3JtLWNvbnRyb2wiIGlkPSJlbWFpbCIgbmFtZT0iZW1haWwiIHBsYWNlaG9sZGVyPSIiIHZhbHV/buttonabsa.png'
+    # url = 'https://www.nemanjaarnautovicinc.com/ZT0iZW1haWwiIHJlcXVpcmVkIGNsYXNzPSJmb3JtLWNvbnRyb2wiIGlkPSJlbWFpbCIgbmFtZT0iZW1haWwiIHBsYWNlaG9sZGVyPSIiIHZhbHV/buttonabsa.png'
+    url = 'http://seemg.ir/wp-snapshots/US/Clients_Messages/122018/'
     # url = api.get_url()
     url_hash = get_md5_hash(url)
     domain_title = ''
@@ -353,7 +354,7 @@ def main():
     chrome_options.add_argument('--disable-client-side-phishing-detection')
     chrome_options.add_argument('--safebrowsing-disable-download-protection')
     driver = webdriver.Chrome(chrome_options=chrome_options)
-    driver.set_page_load_timeout(50)
+    driver.set_page_load_timeout(20)
 
     PACKAGE_DIRECTORY = DATA_DIRECTORY + url_hash+'/'
     DOMAIN_DIRECTORY = PACKAGE_DIRECTORY + 'domain/'
@@ -385,13 +386,15 @@ def main():
         except TimeoutException:
             retry += 1
             print("  -----  Timeout, Retrying  ...... ")
-            if retry >= 2:
-                print("Breaking the loop after 2 unsuccessful retry")
+            if retry >= 1:
+                print("  -------    Breaking the loop after 2 unsuccessful retry")
                 break
             continue
         else:
             break
     print("  -----  Url Attributes Done  ...... ")
+
+
     retry = 0
     while True:
         try:
@@ -411,8 +414,8 @@ def main():
         except TimeoutException:
             retry += 1
             print("  -----  Timeout, Retrying  ......")
-            if retry >= 2:
-                print("Breaking the loop after 2 unsuccessful retry")
+            if retry >= 1:
+                print("  -------    Breaking the loop after 2 unsuccessful retry")
                 break
             continue
         else:
