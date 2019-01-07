@@ -2,7 +2,7 @@ import base64
 import math
 # import hashlib
 # import shutil
-import json
+# import json
 import sys
 import os
 from datetime import datetime
@@ -32,7 +32,7 @@ def get_content_type(url):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0'}
         content_type = requests.head(url, allow_redirects=True, verify=False, headers=headers).headers["Content-Type"]
     except Exception as e:
-        print("Error getting favicon from landing page")
+        print("  -------    Error getting favicon from landing page  ...... ")
         content_type = ''
     return content_type
 
@@ -332,7 +332,6 @@ def main(driver):
     # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_linux64.zip'
     # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_mac64.zip'
     # url = 'http://mahdijamnqatar.com/home/D7298292/mao'
-    # url = 'https://www.nemanjaarnautovicinc.com/ZT0iZW1haWwiIHJlcXVpcmVkIGNsYXNzPSJmb3JtLWNvbnRyb2wiIGlkPSJlbWFpbCIgbmFtZT0iZW1haWwiIHBsYWNlaG9sZGVyPSIiIHZhbHV/buttonabsa.png'
     # url = 'http://seemg.ir/wp-snapshots/US/Clients_Messages/122018/'
     # url = 'http://pandarei.com'
     url = api.get_url()
@@ -357,10 +356,13 @@ def main(driver):
     create_directory(URL_DIRECTORY)
     create_directory(URL_ICONS_DIRECTORY)
     print("  -----  Package Created  ...... ")
+
     retry = 0
     while True:
         try:
+            screenshot_dir = URL_DIRECTORY + '/' + "screenshot.png"
             driver.get(url)
+            driver.save_screenshot(screenshot_dir)
             # url_entropy = get_entropy(url)
             landing_url = driver.current_url
             landing_url_hash = get_md5_hash(landing_url)
@@ -455,20 +457,21 @@ def main(driver):
 if __name__ == '__main__':
     DATA_TABLE = "package_features"
 
-    # print("  -----  Starting headless browser   ...... ")
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-extensions')
-    chrome_options.add_argument('--disable-safebrowsing')
-    chrome_options.add_argument('--disable-web-security')
-    chrome_options.add_argument('--allow-running-insecure-content')
-    chrome_options.add_argument('--allow-insecure-localhost')
-    chrome_options.add_argument('--disable-client-side-phishing-detection')
-    chrome_options.add_argument('--safebrowsing-disable-download-protection')
-    driver = webdriver.Chrome(chrome_options=chrome_options)
-    driver.set_page_load_timeout(50)
+
 
     while(1):
+        # print("  -----  Starting headless browser   ...... ")
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-extensions')
+        chrome_options.add_argument('--disable-safebrowsing')
+        chrome_options.add_argument('--disable-web-security')
+        chrome_options.add_argument('--allow-running-insecure-content')
+        chrome_options.add_argument('--allow-insecure-localhost')
+        chrome_options.add_argument('--disable-client-side-phishing-detection')
+        chrome_options.add_argument('--safebrowsing-disable-download-protection')
+        driver = webdriver.Chrome(chrome_options=chrome_options)
+        driver.set_page_load_timeout(50)
         try:
             start = datetime.now()
             data = main(driver)
@@ -476,9 +479,8 @@ if __name__ == '__main__':
             db.insert_data(DATA_TABLE, data)
             total_time = start-datetime.now()
             print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds/100000))
+            driver.stop_client()
+            driver.close()
+            print("  -----  Stop Chrome headless  ......  ")
         except:
             pass
-
-    driver.stop_client()
-    driver.close()
-    print("  -----  Stop Chrome headless  ......  ")
