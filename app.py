@@ -455,7 +455,7 @@ def main(driver):
 if __name__ == '__main__':
     DATA_TABLE = "package_features"
 
-    print("  -----  Starting headless browser   ...... ")
+    # print("  -----  Starting headless browser   ...... ")
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--disable-extensions')

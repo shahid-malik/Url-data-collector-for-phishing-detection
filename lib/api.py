@@ -33,8 +33,8 @@ def get_url():
         get_url()
 
 
-if __name__ == '__main__':
-
-    while(1):
-        url = get_url()
-        print(url)
+# if __name__ == '__main__':
+#
+#     while(1):
+#         url = get_url()
+#         print(url)

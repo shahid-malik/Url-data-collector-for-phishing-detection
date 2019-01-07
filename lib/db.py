@@ -117,8 +117,7 @@ def check_if_url_processed(url):
         cursor = conn.cursor()
         url_hash = get_md5_hash(url)
         query = "select * from package_features where url_md5='%s';" % url_hash
-        cursor.execute("select * from package_features where url_md5='00b511756a9a7b33a4598d32eafd258f';")
-        rows = cursor.fetchall()
+        cursor.execute(query)
         total_rows = cursor.rowcount
         if total_rows < 1:
             return True
@@ -126,9 +125,9 @@ def check_if_url_processed(url):
             return False
     except Error as e:
         print(e)
-    finally:
-        cursor.close()
-        conn.close()
+    # finally:
+    #     cursor.close()
+    #     conn.close()
 
 
 def main():
@@ -147,18 +146,18 @@ def main():
     # conn.close()
     (insert_data(DATA_TABLE, data))
 
-
-if __name__ == "__main__":
-    DATA_TABLE = "package_features"
-    COLUMN_NAME = "test"
-    DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(1000), url_title varchar(255), " \
-                       "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
-                       "url_total_favicon varchar(255), url_og_domains varchar(15000), 	url_total_og_domains varchar(" \
-                       "255), url_total_og_links varchar(255), 	url_file_type varchar(255), domain_md5 varchar(255)," \
-                       "domain_base64 varchar(1000),domain_title varchar(255), domain_favicons varchar(5000),	" \
-                       "domain_is_html varchar(255),domain_content_type varchar(255),	domain_total_favicon varchar(" \
-                       "255), domain_og_domains varchar(15000), domain_total_og_domains varchar(255)," \
-                       "domain_total_og_links varchar(255), domain_file_type varchar(255),landing_url_hash " \
-                       "varchar(255), landing_url_base64 varchar(1000), title_match varchar(255)) " % DATA_TABLE
-
-    main()
+#
+# if __name__ == "__main__":
+#     DATA_TABLE = "package_features"
+#     COLUMN_NAME = "test"
+#     DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(1000), url_title varchar(255), " \
+#                        "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
+#                        "url_total_favicon varchar(255), url_og_domains varchar(15000), 	url_total_og_domains varchar(" \
+#                        "255), url_total_og_links varchar(255), 	url_file_type varchar(255), domain_md5 varchar(255)," \
+#                        "domain_base64 varchar(1000),domain_title varchar(255), domain_favicons varchar(5000),	" \
+#                        "domain_is_html varchar(255),domain_content_type varchar(255),	domain_total_favicon varchar(" \
+#                        "255), domain_og_domains varchar(15000), domain_total_og_domains varchar(255)," \
+#                        "domain_total_og_links varchar(255), domain_file_type varchar(255),landing_url_hash " \
+#                        "varchar(255), landing_url_base64 varchar(1000), title_match varchar(255)) " % DATA_TABLE
+#
+#     main()
