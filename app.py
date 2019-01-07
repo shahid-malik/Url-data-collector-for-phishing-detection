@@ -334,8 +334,8 @@ def main(driver):
     # url = 'http://mahdijamnqatar.com/home/D7298292/mao'
     # url = 'https://www.nemanjaarnautovicinc.com/ZT0iZW1haWwiIHJlcXVpcmVkIGNsYXNzPSJmb3JtLWNvbnRyb2wiIGlkPSJlbWFpbCIgbmFtZT0iZW1haWwiIHBsYWNlaG9sZGVyPSIiIHZhbHV/buttonabsa.png'
     # url = 'http://seemg.ir/wp-snapshots/US/Clients_Messages/122018/'
-    url = 'http://pandarei.com'
-    # url = api.get_url()
+    # url = 'http://pandarei.com'
+    url = api.get_url()
     url_hash = get_md5_hash(url)
     domain_title = ''
     url_title = ''

@@ -4,6 +4,7 @@ from mysql.connector import MySQLConnection, Error
 import sys
 import os
 import socket
+import hashlib
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 import config
 
@@ -47,6 +48,22 @@ def add_column(con, table, col_name):
     except Exception as e:
         print("Issue adding new column to the table with exception", e)
         pass
+
+
+def get_md5_hash(url):
+    """
+    generate md5 hash of the string, In this case, a url with http or https is provided for the synchronization
+    throughout the code
+    :param url:
+    :return: md5 hash
+    """
+    try:
+        m = hashlib.md5()
+        m.update(url)
+        md5_hash = m.hexdigest()
+    except:
+        md5_hash = ''
+    return md5_hash
 
 
 def insert_data(table, data_dict):
@@ -94,17 +111,21 @@ def insert_data(table, data_dict):
         print("  -----  Data Inserted Successfully  ...... ")
 
 
-def check_if_url_processed(conn, url_hash):
+def check_if_url_processed(url):
     try:
+        conn = connect_db()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM books")
+        url_hash = get_md5_hash(url)
+        query = "select * from package_features where url_md5='%s';" % url_hash
+        cursor.execute("select * from package_features where url_md5='00b511756a9a7b33a4598d32eafd258f';")
         rows = cursor.fetchall()
-        print('Total Row(s):', cursor.rowcount)
-        for row in rows:
-            print(row)
+        total_rows = cursor.rowcount
+        if total_rows < 1:
+            return True
+        else:
+            return False
     except Error as e:
         print(e)
-
     finally:
         cursor.close()
         conn.close()

@@ -1,5 +1,6 @@
 import requests
 import urllib2
+import db
 import json
 requests.packages.urllib3.disable_warnings()
 
@@ -19,7 +20,12 @@ def get_url():
         try:
             code = urllib2.urlopen(req.json()['url']).code
             if code:
-                return req.json()['url']
+                url = req.json()['url']
+                new_url = db.check_if_url_processed(url)
+                if new_url:
+                    return url
+                else:
+                    return get_url()
         except Exception as e:
             # print("into exception", e)
             return get_url()
