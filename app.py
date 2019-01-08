@@ -327,13 +327,11 @@ def main(driver):
 
     # url = 'https://onedrive.live.com/download?cid=5AF1929C3A63A14A'
     # url = 'https://www.codementor.io/aviaryan/downloading-files-from-urls-in-python-77q3bs0un'
-    # url = 'http://www.americanshipper.com/'
     # url = 'http://media.mtvnservices.com/edge/bento/miso.1.4.17.swf'
-    # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_linux64.zip'
     # url = 'https://chromedriver.storage.googleapis.com/2.45/chromedriver_mac64.zip'
     # url = 'http://mahdijamnqatar.com/home/D7298292/mao'
     # url = 'http://seemg.ir/wp-snapshots/US/Clients_Messages/122018/'
-    # url = 'http://pandarei.com'
+    # url = 'http://ide-europe.org'
     url = api.get_url()
     url_hash = get_md5_hash(url)
     domain_title = ''
@@ -360,9 +358,15 @@ def main(driver):
     retry = 0
     while True:
         try:
-            screenshot_dir = URL_DIRECTORY + '/' + "screenshot.png"
             driver.get(url)
+            screenshot_dir = URL_DIRECTORY + '/' + "screenshot.png"
             driver.save_screenshot(screenshot_dir)
+
+            page = (driver.page_source).encode('utf-8')
+            file_ = open(URL_DIRECTORY + '/' + 'page.html', 'w')
+            file_.write(page)
+            file_.close()
+
             # url_entropy = get_entropy(url)
             landing_url = driver.current_url
             landing_url_hash = get_md5_hash(landing_url)
@@ -482,5 +486,6 @@ if __name__ == '__main__':
             driver.stop_client()
             driver.close()
             print("  -----  Stop Chrome headless  ......  ")
-        except:
+        except Exception as e:
+            print(Exception)
             pass
