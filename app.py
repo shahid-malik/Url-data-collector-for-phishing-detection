@@ -19,7 +19,7 @@ import urllib
 from BeautifulSoup import BeautifulSoup
 # from selenium.webdriver.firefox.options import Options
 from selenium import webdriver
-from lib import api, db
+from lib import api, db, html2txt
 from selenium.common.exceptions import TimeoutException
 
 requests.packages.urllib3.disable_warnings()
@@ -332,7 +332,7 @@ def save_html(url_directory, sel_driver):
     """
     try:
         page = sel_driver.page_source.encode('utf-8')
-        file_path = url_directory + '/' + 'page.html'
+        file_path = url_directory + 'page.html'
         file_ = open(url_directory + '/' + 'page.html', 'w')
         file_.write(page)
         file_.close()
@@ -452,7 +452,8 @@ def get_url_attributes(url_icon_directory, url_directory, url, driver):
 
             create_screenshot(url_directory, driver)
             file_path = save_html(url_directory, driver)
-
+            text = html2txt.text_from_html(file_path)
+            print(text)
             landing_url = driver.current_url
             landing_url_hash = get_md5_hash(landing_url)
             landing_url_base64 = get_base64(landing_url)
@@ -514,8 +515,8 @@ def main(data_directory, chrome_driver):
 
     data_obj = {}
     domain_attributes = {}
-    # url = 'http://www.ofemail.co.uk/link.php?M=2315306&N=985&L=213&F=H'
-    url = api.get_url()
+    url = 'http://googloe.com/'
+    # url = api.get_url()
     url_hash = get_md5_hash(url)
 
     print(" ***** Processing %s  ***** " % url)
@@ -523,8 +524,6 @@ def main(data_directory, chrome_driver):
     domain_icons_directory, url_directory, url_icons_directory, domain_directory = create_package(data_directory, url)
     url_attributes = get_url_attributes(url_icons_directory, url_directory, url, chrome_driver)
 
-    if not url.endswith('/'):
-        url += '/'
     if url != domain:
         domain_attributes = get_domain_attributes(domain_icons_directory, url_directory, domain, chrome_driver)
     else:
@@ -585,13 +584,11 @@ if __name__ == '__main__':
     while (1):
         try:
             start = datetime.now()
-            print("  -----  Starting headless browser   ...... ")
             driver = get_chrome_driver_instance()
             data = main(DATA_DIRECTORY, driver)
             db.insert_data(data)
             total_time = start - datetime.now()
             shutdown_driver(driver)
-            print("  -----  Stop Chrome headless  ......  ")
             print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds / 100000))
         except Exception as e:
             print(e)

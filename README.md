@@ -35,3 +35,9 @@ Testing Urls
 NOTES
 ============
 1- content type needs to be more dynamic
+
+
+Issues
+============
+
+handling 429
