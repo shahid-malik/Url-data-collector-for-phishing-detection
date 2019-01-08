@@ -19,7 +19,7 @@ def tag_visible(element):
     return True
 
 
-def text_from_html(in_url):
+def text_from_html(url_directory, in_url):
     """
     Get the text from url
     :param in_url:
@@ -32,9 +32,9 @@ def text_from_html(in_url):
     text = u" ".join(t.strip() for t in visible_texts)
     file_name = in_url.split('/')[-1]
     try:
-        with open(file_name, 'w') as out_file:
-            out_file.write(text)
-            out_file.close()
+        file_ = open(url_directory + 'page.txt', 'w')
+        file_.write(text)
+        file_.close()
     except:
         return False
     return True

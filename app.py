@@ -4,7 +4,7 @@ import datetime
 import time
 # import hashlib
 # import shutil
-# import json
+import json
 import sys
 import os
 from datetime import datetime
@@ -452,8 +452,8 @@ def get_url_attributes(url_icon_directory, url_directory, url, driver):
 
             create_screenshot(url_directory, driver)
             file_path = save_html(url_directory, driver)
-            text = html2txt.text_from_html(file_path)
-            print(text)
+            html2txt.text_from_html(url_directory, file_path)
+
             landing_url = driver.current_url
             landing_url_hash = get_md5_hash(landing_url)
             landing_url_base64 = get_base64(landing_url)
@@ -483,6 +483,12 @@ def get_url_attributes(url_icon_directory, url_directory, url, driver):
             data_obj['landing_url_hash'] = landing_url_hash
             data_obj['landing_url_base64'] = landing_url_base64
             data_obj['url_length'] = len(url)
+            if 'https' in str(url):
+                protocol ='https'
+            else:
+                protocol = 'http'
+            json_data = {'url_base64': url_base64, 'protocol': protocol, 'title': page_title }
+            write_json(json_data, url_directory)
 
             print("  -----  Url Attributes Done  ...... ")
         except TimeoutException:
@@ -495,6 +501,11 @@ def get_url_attributes(url_icon_directory, url_directory, url, driver):
         else:
             break
     return data_obj
+
+
+def write_json(json_data, url_directory):
+    with open(url_directory + 'data.json', 'w') as outfile:
+        json.dump(json_data, outfile)
 
 
 def get_current_time():
@@ -515,8 +526,8 @@ def main(data_directory, chrome_driver):
 
     data_obj = {}
     domain_attributes = {}
-    url = 'http://googloe.com/'
-    # url = api.get_url()
+    # url = 'http://googloe.com/'
+    url = api.get_url()
     url_hash = get_md5_hash(url)
 
     print(" ***** Processing %s  ***** " % url)
