@@ -66,8 +66,10 @@ def get_md5_hash(url):
     return md5_hash
 
 
-def insert_data(table, data_dict):
+def insert_data(data_dict):
+    table = 'package_features'
     con = connect_db()
+
     data_insertion_query = "insert into %s (url_md5, url_base64, url_title, url_favicons, url_is_html, " \
                            "url_content_type, url_total_favicon, url_og_domains, url_total_og_domains, " \
                            "url_total_og_links, url_file_type, domain_md5, domain_base64, domain_title, " \
@@ -146,18 +148,38 @@ def main():
     # conn.close()
     (insert_data(DATA_TABLE, data))
 
-#
+
 # if __name__ == "__main__":
 #     DATA_TABLE = "package_features"
 #     COLUMN_NAME = "test"
-#     DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(1000), url_title varchar(255), " \
-#                        "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
-#                        "url_total_favicon varchar(255), url_og_domains varchar(15000), 	url_total_og_domains varchar(" \
-#                        "255), url_total_og_links varchar(255), 	url_file_type varchar(255), domain_md5 varchar(255)," \
-#                        "domain_base64 varchar(1000),domain_title varchar(255), domain_favicons varchar(5000),	" \
-#                        "domain_is_html varchar(255),domain_content_type varchar(255),	domain_total_favicon varchar(" \
-#                        "255), domain_og_domains varchar(15000), domain_total_og_domains varchar(255)," \
-#                        "domain_total_og_links varchar(255), domain_file_type varchar(255),landing_url_hash " \
-#                        "varchar(255), landing_url_base64 varchar(1000), title_match varchar(255)) " % DATA_TABLE
-#
-#     main()
+#     data_dict = {'url_length': 21, 'domain': 'http://solitinera.com/',
+#                  'url_favicons': '3f8c936116dbf3b30b875e12ab2268e2,3f8c936116dbf3b30b875e12ab2268e2',
+#                  'url_file_type': 'text/html', 'domain_total_og_links': 22, 'url_total_favicon': 2,
+#                  'timestamp': '2019-01-08 16:00:02', 'domain_total_favicon': 2,
+#                  'domain_base64': 'aHR0cDovL3NvbGl0aW5lcmEuY29t', 'url_total_og_domains': 8,
+#                  'domain_entropy': 3.880179922675737, 'domain_isHtml': True,
+#                  'landing_url_base64': 'aHR0cHM6Ly93d3cuc29saXRpbmVyYS5jb20v', 'title_match': True,
+#                  'domain_page_title': 'Sol\'itinera l Reportage l France', 'url_base64': 'aHR0cDovL3NvbGl0aW5lcmEuY29t',
+#                  'domain_file_type': 'text/html', 'url': 'http://solitinera.com',
+#                  'domain_content_type': 'text/html;charset=utf-8', 'url_isHtml': True,
+#                  'url_og_domains': 'bcbafb69b52516b1733a52b737d2d4b7,e203e98e4c606735cf56db84a002fd22,5f395d3a47e44537ade5365501edc4d1,f3781a2a0339b51700002c01f505c91c,8f5d4f2405f1acd49e7eb3bd0212ccc4,e9efa78d624d92773b6cd944a094f8c6,dba51bcc527ba93f7fe03868747280d5,d41d8cd98f00b204e9800998ecf8427e',
+#                  'domain_total_og_domains': 8, 'uri_length': 0, 'url_md5': 'cc44418a1a39ed7a29e75836b7b56f4a',
+#                  'url_entropy': 3.880179922675737, 'url_content_type': 'text/html;charset=utf-8',
+#                  'landing_url_hash': '8f5d4f2405f1acd49e7eb3bd0212ccc4',
+#                  'domain_md5': 'cc44418a1a39ed7a29e75836b7b56f4a', 'url_total_og_links': 22,
+#                  'url_page_title': 'Sol\'\itinera l Reportage l France',
+#                  'domain_og_domains': 'bcbafb69b52516b1733a52b737d2d4b7,e203e98e4c606735cf56db84a002fd22,5f395d3a47e44537ade5365501edc4d1,f3781a2a0339b51700002c01f505c91c,8f5d4f2405f1acd49e7eb3bd0212ccc4,e9efa78d624d92773b6cd944a094f8c6,dba51bcc527ba93f7fe03868747280d5,d41d8cd98f00b204e9800998ecf8427e',
+#                  'domain_favicons': '3f8c936116dbf3b30b875e12ab2268e2,3f8c936116dbf3b30b875e12ab2268e2'}
+#     insert_data("package_features", data_dict)
+
+    # DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(1000), url_title varchar(255), " \
+    #                    "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
+    #                    "url_total_favicon varchar(255), url_og_domains varchar(15000), 	url_total_og_domains varchar(" \
+    #                    "255), url_total_og_links varchar(255), 	url_file_type varchar(255), domain_md5 varchar(255)," \
+    #                    "domain_base64 varchar(1000),domain_title varchar(255), domain_favicons varchar(5000),	" \
+    #                    "domain_is_html varchar(255),domain_content_type varchar(255),	domain_total_favicon varchar(" \
+    #                    "255), domain_og_domains varchar(15000), domain_total_og_domains varchar(255)," \
+    #                    "domain_total_og_links varchar(255), domain_file_type varchar(255),landing_url_hash " \
+    #                    "varchar(255), landing_url_base64 varchar(1000), title_match varchar(255)) " % DATA_TABLE
+    #
+    # main()
