@@ -5,6 +5,7 @@ import sys
 import os
 import socket
 import hashlib
+
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 import config
 
@@ -40,7 +41,7 @@ def execute_query(con, query):
 
 
 def add_column(con, table, col_name):
-    ADD_DATA_TABLE_QUERY = "ALTER TABLE %s ADD %s varchar(255)" % (table, col_name)
+    ADD_DATA_TABLE_QUERY = "ALTER TABLE %s ADD %s varchar(50)" % (table, col_name)
     try:
         query_status = execute_query(con, ADD_DATA_TABLE_QUERY)
         if query_status:
@@ -75,10 +76,12 @@ def insert_data(data_dict):
                            "url_total_og_links, url_file_type, domain_md5, domain_base64, domain_title, " \
                            "domain_favicons, domain_is_html, domain_content_type, domain_total_favicon, " \
                            "domain_og_domains, domain_total_og_domains, domain_total_og_links, domain_file_type, " \
-                           "landing_url_hash, landing_url_base64, title_match, uri_length, url_length) VALUES ('%s', " \
+                           "landing_url_hash, landing_url_base64, title_match, uri_length, url_length, " \
+                           "is_favicon_match," \
+                           "domain_entropy, url_entropy, timestamp, total_at_the_rate) VALUES ('%s', " \
                            "'%s', '%s', '%s', " \
                            "'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', " \
-                           "'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');" \
+                           "'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');" \
                            % (table,
                               data_dict['url_md5'],
                               data_dict['url_base64'],
@@ -106,7 +109,14 @@ def insert_data(data_dict):
                               data_dict['landing_url_base64'],
                               data_dict['title_match'],
                               data_dict['uri_length'],
-                              data_dict['url_length']
+                              data_dict['url_length'],
+
+                              data_dict['is_favicon_match'],
+                              data_dict['domain_entropy'],
+                              data_dict['url_entropy'],
+                              data_dict['timestamp'],
+                              data_dict['total_at_the_rate'],
+
                               )
     query_status = execute_query(con, data_insertion_query)
     if query_status:
@@ -122,14 +132,13 @@ def check_if_url_processed(url):
         cursor.execute(query)
         total_rows = cursor.rowcount
         if total_rows < 1:
+            conn.close()
             return True
         else:
+            conn.close()
             return False
     except Error as e:
-        print(e)
-    # finally:
-    #     cursor.close()
-    #     conn.close()
+        print("Exception %s in check if url processed method" % e)
 
 
 def main():
@@ -144,13 +153,14 @@ def main():
             'domain_file_type': 'test', 'landing_url_hash': 'test', 'landing_url_base64': 'test', 'title_match': 'test'
             }
     # execute_query(conn, DATA_TABLE_QUERY)
-    # add_column(conn, DATA_TABLE, 'domain_entropy')
-    # conn.close()
-    (insert_data(DATA_TABLE, data))
+    add_column(conn, DATA_TABLE, 'total_at_the_rate')
+    conn.close()
+    # (insert_data(DATA_TABLE, data))
 
-
-# if __name__ == "__main__":
-#     DATA_TABLE = "package_features"
+#
+if __name__ == "__main__":
+    DATA_TABLE = "package_features"
+    main()
 #     COLUMN_NAME = "test"
 #     data_dict = {'url_length': 21, 'domain': 'http://solitinera.com/',
 #                  'url_favicons': '3f8c936116dbf3b30b875e12ab2268e2,3f8c936116dbf3b30b875e12ab2268e2',
@@ -172,14 +182,14 @@ def main():
 #                  'domain_favicons': '3f8c936116dbf3b30b875e12ab2268e2,3f8c936116dbf3b30b875e12ab2268e2'}
 #     insert_data("package_features", data_dict)
 
-    # DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(1000), url_title varchar(255), " \
-    #                    "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
-    #                    "url_total_favicon varchar(255), url_og_domains varchar(15000), 	url_total_og_domains varchar(" \
-    #                    "255), url_total_og_links varchar(255), 	url_file_type varchar(255), domain_md5 varchar(255)," \
-    #                    "domain_base64 varchar(1000),domain_title varchar(255), domain_favicons varchar(5000),	" \
-    #                    "domain_is_html varchar(255),domain_content_type varchar(255),	domain_total_favicon varchar(" \
-    #                    "255), domain_og_domains varchar(15000), domain_total_og_domains varchar(255)," \
-    #                    "domain_total_og_links varchar(255), domain_file_type varchar(255),landing_url_hash " \
-    #                    "varchar(255), landing_url_base64 varchar(1000), title_match varchar(255)) " % DATA_TABLE
-    #
-    # main()
+# DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(1000), url_title varchar(255), " \
+#                    "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \
+#                    "url_total_favicon varchar(255), url_og_domains varchar(15000), 	url_total_og_domains varchar(" \
+#                    "255), url_total_og_links varchar(255), 	url_file_type varchar(255), domain_md5 varchar(255)," \
+#                    "domain_base64 varchar(1000),domain_title varchar(255), domain_favicons varchar(5000),	" \
+#                    "domain_is_html varchar(255),domain_content_type varchar(255),	domain_total_favicon varchar(" \
+#                    "255), domain_og_domains varchar(15000), domain_total_og_domains varchar(255)," \
+#                    "domain_total_og_links varchar(255), domain_file_type varchar(255),landing_url_hash " \
+#                    "varchar(255), landing_url_base64 varchar(1000), title_match varchar(255)) " % DATA_TABLE
+#
+# main()

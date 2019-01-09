@@ -1,7 +1,7 @@
 import requests
 import urllib2
 import db
-import json
+# import json
 requests.packages.urllib3.disable_warnings()
 
 
@@ -26,7 +26,7 @@ def get_url():
                     return url
                 else:
                     return get_url()
-        except Exception as e:
+        except:
             # print("into exception", e)
             return get_url()
     else:

@@ -23,23 +23,23 @@ def text_from_html(url_directory, in_url):
     """
     Get the text from url
     :param in_url:
+    :param url_directory:
     :return:
     """
-    body = urlopen('file://'+ in_url).read()
+    body = urlopen('file://' + in_url).read()
     soup = BeautifulSoup(body, 'html.parser')
     texts = soup.findAll(text=True)
     visible_texts = filter(tag_visible, texts)
     text = u" ".join(t.strip() for t in visible_texts)
-    file_name = in_url.split('/')[-1]
     try:
         file_ = open(url_directory + 'page.txt', 'w')
-        file_.write(text)
+        file_.write(str(text))
         file_.close()
     except:
         return False
     return True
 
-
-if __name__ == "__main__":
-    in_url = "/home/shahid/projects/behaviouralClassifier/DATA/18ccedfd35c7ec0bdbefca38fd2209da/url//page.html"
-    text_from_html(in_url)
+#
+# if __name__ == "__main__":
+#     in_url = "/home/shahid/projects/behaviouralClassifier/DATA/18ccedfd35c7ec0bdbefca38fd2209da/url//page.html"
+#     text_from_html(in_url)
