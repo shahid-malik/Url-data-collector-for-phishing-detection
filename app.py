@@ -17,6 +17,8 @@ from selenium import webdriver
 from lib import api, db, html2txt
 from selenium.common.exceptions import TimeoutException
 requests.packages.urllib3.disable_warnings()
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 
 def get_content_type(url):
