@@ -1,6 +1,9 @@
 
 # URL attributes collection for phishing attacks
 
+Sttaus
+==============================
+file_type = -1 (authorization required)
 
 outgoing links issue & testing
 ==============================

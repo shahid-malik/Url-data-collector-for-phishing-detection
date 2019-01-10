@@ -296,11 +296,13 @@ def get_file_type(url):
     mime = magic.Magic(mime=True)
     output = "output"
     try:
-        urllib.urlretrieve(url, output)
-        mimes = mime.from_file(output)
-        return mimes
+        status = urllib2.urlopen(url).code
+        if status:
+            urllib.urlretrieve(url, output)
+            mimes = mime.from_file(output)
+            return mimes
     except:
-        pass
+        return -1
 
 
 def get_entropy(string, base=2.0):
@@ -343,11 +345,11 @@ def create_screenshot(directory_path, chrome_driver):
     :return:
     """
     try:
-        screenshot_dir = directory_path + '/' + "screenshot.png"
+        screenshot_dir = directory_path + "screenshot.png"
         chrome_driver.save_screenshot(screenshot_dir)
         return True
-    except:
-        pass
+    except Exception as exp:
+        print("Exception in getting screenshot %s" % exp)
 
 
 def create_package(data_directory, url):
@@ -589,9 +591,9 @@ def main(data_directory, chrome_driver):
 
     data_obj = {}
     domain_attributes = {}
-    # url = 'https://shop.lego.com/en-US/RC-Tracked-Racer-42065'
-    # url = 'http://ourmkt.site '
-    url = api.get_url()
+    # url = 'http://softmeasure.zoy.org/ '
+    url = 'http://bulk1.limeline.net/link.php?M=7520722&N=1704&L=147&F=H/'
+    # url = api.get_url()
     url = url.strip(' ')
     if not url.endswith('/'):
         url += '/'
