@@ -11,6 +11,10 @@ import config
 
 
 def connect_db():
+    """
+    Create a mysql database connection
+    :return:
+    """
     if socket.gethostbyname(socket.gethostname()) == '127.0.1.1':
         DATABASE_CONFIG = config.LOCAL_DATABASE_CONFIG
     else:
@@ -29,18 +33,27 @@ def connect_db():
 
 
 def execute_query(con, query):
+    """Given any query and database connection, this function will execute the query and return the status True
+    if successful
+    """
     cursor = con.cursor()
     try:
         cursor.execute(query)
         con.commit()
         cursor.close()
         return True
-    except Exception as e:
-        print(e)
-        pass
+    except:
+        return False
 
 
 def add_column(con, table, col_name):
+    """
+    Add a column to the table using alter table standard query
+    :param con:
+    :param table:
+    :param col_name:
+    :return:
+    """
     ADD_DATA_TABLE_QUERY = "ALTER TABLE %s ADD %s varchar(50)" % (table, col_name)
     try:
         query_status = execute_query(con, ADD_DATA_TABLE_QUERY)
@@ -68,6 +81,11 @@ def get_md5_hash(url):
 
 
 def insert_data(data_dict):
+    """
+    Insert data to the table (Package_features) using the query
+    :param data_dict:
+    :return:
+    """
     table = 'package_features'
     con = connect_db()
 
@@ -124,6 +142,12 @@ def insert_data(data_dict):
 
 
 def check_if_url_processed(url):
+    """
+    Check if the url get from api is processed already based on url md5 hash which is also primary key
+    if url is processed then get another url from api. url is processed only once
+    :param url:
+    :return:
+    """
     try:
         conn = connect_db()
         cursor = conn.cursor()
@@ -142,6 +166,10 @@ def check_if_url_processed(url):
 
 
 def main():
+    """
+    main function to execute the functionality
+    :return:
+    """
     conn = connect_db()
     DATA_TABLE = "package_features"
     data = {'url_md5': 'test', 'url_base64': 'test', 'url_title': 'test', 'url_favicons': 'test',
@@ -158,29 +186,25 @@ def main():
     # (insert_data(DATA_TABLE, data))
 
 #
-if __name__ == "__main__":
-    DATA_TABLE = "package_features"
-    main()
-#     COLUMN_NAME = "test"
-#     data_dict = {'url_length': 21, 'domain': 'http://solitinera.com/',
-#                  'url_favicons': '3f8c936116dbf3b30b875e12ab2268e2,3f8c936116dbf3b30b875e12ab2268e2',
-#                  'url_file_type': 'text/html', 'domain_total_og_links': 22, 'url_total_favicon': 2,
-#                  'timestamp': '2019-01-08 16:00:02', 'domain_total_favicon': 2,
-#                  'domain_base64': 'aHR0cDovL3NvbGl0aW5lcmEuY29t', 'url_total_og_domains': 8,
-#                  'domain_entropy': 3.880179922675737, 'domain_isHtml': True,
-#                  'landing_url_base64': 'aHR0cHM6Ly93d3cuc29saXRpbmVyYS5jb20v', 'title_match': True,
-#                  'domain_page_title': 'Sol\'itinera l Reportage l France', 'url_base64': 'aHR0cDovL3NvbGl0aW5lcmEuY29t',
-#                  'domain_file_type': 'text/html', 'url': 'http://solitinera.com',
-#                  'domain_content_type': 'text/html;charset=utf-8', 'url_isHtml': True,
-#                  'url_og_domains': 'bcbafb69b52516b1733a52b737d2d4b7,e203e98e4c606735cf56db84a002fd22,5f395d3a47e44537ade5365501edc4d1,f3781a2a0339b51700002c01f505c91c,8f5d4f2405f1acd49e7eb3bd0212ccc4,e9efa78d624d92773b6cd944a094f8c6,dba51bcc527ba93f7fe03868747280d5,d41d8cd98f00b204e9800998ecf8427e',
-#                  'domain_total_og_domains': 8, 'uri_length': 0, 'url_md5': 'cc44418a1a39ed7a29e75836b7b56f4a',
-#                  'url_entropy': 3.880179922675737, 'url_content_type': 'text/html;charset=utf-8',
-#                  'landing_url_hash': '8f5d4f2405f1acd49e7eb3bd0212ccc4',
-#                  'domain_md5': 'cc44418a1a39ed7a29e75836b7b56f4a', 'url_total_og_links': 22,
-#                  'url_page_title': 'Sol\'\itinera l Reportage l France',
-#                  'domain_og_domains': 'bcbafb69b52516b1733a52b737d2d4b7,e203e98e4c606735cf56db84a002fd22,5f395d3a47e44537ade5365501edc4d1,f3781a2a0339b51700002c01f505c91c,8f5d4f2405f1acd49e7eb3bd0212ccc4,e9efa78d624d92773b6cd944a094f8c6,dba51bcc527ba93f7fe03868747280d5,d41d8cd98f00b204e9800998ecf8427e',
-#                  'domain_favicons': '3f8c936116dbf3b30b875e12ab2268e2,3f8c936116dbf3b30b875e12ab2268e2'}
-#     insert_data("package_features", data_dict)
+# if __name__ == "__main__": DATA_TABLE = "package_features" main() COLUMN_NAME = "test" data_dict = {'url_length':
+# 21, 'domain': 'http://solitinera.com/', 'url_favicons': '3f8c936116dbf3b30b875e12ab2268e2,
+# 3f8c936116dbf3b30b875e12ab2268e2', 'url_file_type': 'text/html', 'domain_total_og_links': 22, 'url_total_favicon':
+# 2, 'timestamp': '2019-01-08 16:00:02', 'domain_total_favicon': 2, 'domain_base64': 'aHR0cDovL3NvbGl0aW5lcmEuY29t',
+# 'url_total_og_domains': 8, 'domain_entropy': 3.880179922675737, 'domain_isHtml': True, 'landing_url_base64':
+# 'aHR0cHM6Ly93d3cuc29saXRpbmVyYS5jb20v', 'title_match': True, 'domain_page_title': 'Sol\'itinera l Reportage l
+# France', 'url_base64': 'aHR0cDovL3NvbGl0aW5lcmEuY29t', 'domain_file_type': 'text/html',
+# 'url': 'http://solitinera.com', 'domain_content_type': 'text/html;charset=utf-8', 'url_isHtml': True,
+# 'url_og_domains': 'bcbafb69b52516b1733a52b737d2d4b7,e203e98e4c606735cf56db84a002fd22,
+# 5f395d3a47e44537ade5365501edc4d1,f3781a2a0339b51700002c01f505c91c,8f5d4f2405f1acd49e7eb3bd0212ccc4,
+# e9efa78d624d92773b6cd944a094f8c6,dba51bcc527ba93f7fe03868747280d5,d41d8cd98f00b204e9800998ecf8427e',
+# 'domain_total_og_domains': 8, 'uri_length': 0, 'url_md5': 'cc44418a1a39ed7a29e75836b7b56f4a', 'url_entropy':
+# 3.880179922675737, 'url_content_type': 'text/html;charset=utf-8', 'landing_url_hash':
+# '8f5d4f2405f1acd49e7eb3bd0212ccc4', 'domain_md5': 'cc44418a1a39ed7a29e75836b7b56f4a', 'url_total_og_links': 22,
+# 'url_page_title': 'Sol\'\itinera l Reportage l France', 'domain_og_domains': 'bcbafb69b52516b1733a52b737d2d4b7,
+# e203e98e4c606735cf56db84a002fd22,5f395d3a47e44537ade5365501edc4d1,f3781a2a0339b51700002c01f505c91c,
+# 8f5d4f2405f1acd49e7eb3bd0212ccc4,e9efa78d624d92773b6cd944a094f8c6,dba51bcc527ba93f7fe03868747280d5,
+# d41d8cd98f00b204e9800998ecf8427e', 'domain_favicons': '3f8c936116dbf3b30b875e12ab2268e2,
+# 3f8c936116dbf3b30b875e12ab2268e2'} insert_data("package_features", data_dict)
 
 # DATA_TABLE_QUERY = "create table %s ( url_md5 varchar(255), url_base64 varchar(1000), url_title varchar(255), " \
 #                    "url_favicons varchar(5000), url_is_html varchar(255), 	url_content_type varchar(255), 	" \

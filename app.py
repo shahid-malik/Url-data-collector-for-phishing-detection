@@ -592,8 +592,8 @@ def main(data_directory, chrome_driver):
     data_obj = {}
     domain_attributes = {}
     # url = 'http://softmeasure.zoy.org/ '
-    url = 'http://bulk1.limeline.net/link.php?M=7520722&N=1704&L=147&F=H/'
-    # url = api.get_url()
+    # url = 'http://bulk1.limeline.net/link.php?M=7520722&N=1704&L=147&F=H/'
+    url = api.get_url()
     url = url.strip(' ')
     if not url.endswith('/'):
         url += '/'
