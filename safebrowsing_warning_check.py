@@ -93,12 +93,13 @@ def get_page_title(chrome_driver):
     # soup = BeautifulSoup(urllib2.urlopen(url))
     try:
         # title = soup.title.string
-        title = chrome_driver.title
+        title = chrome_driver.title.encode('ascii', 'replace')
         title = title.replace("'", "''")
-        print(title)
     except Exception as exp:
-        title = ''
         print("Error while extracting title from landing page with Exception \n %s" % exp)
+
+        title = ''
+
     return title
 
 
@@ -276,18 +277,6 @@ def get_og_links(chrome_driver):
     return [total_og_links, og_links]
 
 
-def is_title_match(url_title, domain_title):
-    """
-    If title on the url and title on the domain is same
-    :param url_title:
-    :param domain_title:
-    :return:
-    """
-    if url_title == domain_title:
-        return True
-    return False
-
-
 def get_file_type(url):
     """
     Get the file type of the landing page on url
@@ -388,79 +377,6 @@ def create_package(data_directory, url):
     return URL_DIRECTORY, URL_ICONS_DIRECTORY, DOMAIN_DIRECTORY, DOMAIN_ICONS_DIRECTORY
 
 
-def is_favicon_match(url_favicon, domain_favicon):
-    """
-    Find if url favicon and domain favicon matched
-    :return:
-    """
-    url_favicon_set = set(url_favicon.split(','))
-    domain_favicon_set = set(domain_favicon.split(','))
-    if set(url_favicon_set) & set(domain_favicon_set):
-        return 1
-    return 0
-
-
-def get_domain_attributes(domain_icons_directory, domain_directory, domain, chrome_driver):
-    """
-    Get domain attributes
-    :param domain_icons_directory:
-    :param domain_directory:
-    :param domain:
-    :param chrome_driver:
-    :return:
-    """
-
-    data_obj = {}
-    retry = 0
-    while True:
-        try:
-            chrome_driver.get(domain)
-
-            create_screenshot(domain_directory, chrome_driver)
-            file_path = save_html(domain_directory, chrome_driver)
-            html2txt.text_from_html(domain_directory, file_path)
-
-            domain_total_og_urls, domain_og_urls_list = get_og_links(chrome_driver)
-            domain_total_og_domains, domain_og_domains = get_og_domains(domain_og_urls_list)
-            domain_content_type = get_content_type(domain)
-            domain_total_favicons, domain_favicons = get_favicon_selenium(chrome_driver, domain_icons_directory)
-
-            data_obj['domain_md5'] = get_md5_hash(domain)
-            data_obj['domain_base64'] = get_base64(domain)
-            data_obj['domain_entropy'] = get_entropy(domain)
-            data_obj['domain_page_title'] = get_page_title(chrome_driver)
-            data_obj['domain'] = domain
-            data_obj['domain_favicons'] = domain_favicons
-            data_obj['domain_content_type'] = domain_content_type
-            data_obj['domain_total_favicon'] = domain_total_favicons
-            data_obj['domain_og_domains'] = domain_og_domains
-            data_obj['domain_total_og_domains'] = domain_total_og_domains
-            data_obj['domain_total_og_links'] = domain_total_og_urls
-            data_obj['domain_entropy'] = get_entropy(domain)
-            data_obj['domain_isHtml'] = is_url_html(domain_content_type)
-            data_obj['domain_file_type'] = get_file_type(domain)
-
-            if 'https' in str(domain):
-                protocol = 'https'
-            else:
-                protocol = 'http'
-            json_data = {'url_base64': data_obj['domain_base64'], 'protocol': protocol,
-                         'title': data_obj['domain_page_title']}
-            write_json(json_data, domain_directory)
-
-            print("  -----  Domain Attributes Done ...... ")
-        except TimeoutException:
-            retry += 3
-            print("  -----  Timeout, Retrying  ......")
-            if retry >= 1:
-                print("      -------    Leaving after 3 unsuccessful retry")
-                break
-            continue
-        else:
-            break
-    return data_obj
-
-
 def get_url_attributes(url_icon_directory, url_directory, url, chrome_driver):
     """
     Get attributes from url
@@ -559,17 +475,16 @@ def get_chrome_driver_instance():
     """
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--disable-extensions')
-    chrome_options.add_argument('--disable-safebrowsing')
-    chrome_options.add_argument('--disable-web-security')
-    chrome_options.add_argument('--allow-running-insecure-content')
-    chrome_options.add_argument('--allow-insecure-localhost')
-    chrome_options.add_argument('--disable-client-side-phishing-detection')
-    chrome_options.add_argument('--safebrowsing-disable-download-protection')
+    # chrome_options.add_argument('--disable-extensions')
+    chrome_options.add_argument('--enable-safebrowsing')
+    chrome_options.add_argument('--enable-web-security')
+    # chrome_options.add_argument('--allow-running-insecure-content')
+    # chrome_options.add_argument('--allow-insecure-localhost')
+    chrome_options.add_argument('--enable-client-side-phishing-detection')
+    # chrome_options.add_argument('--safebrowsing-disable-download-protection')
     chrome_driver = webdriver.Chrome(chrome_options=chrome_options)
     chrome_driver.set_page_load_timeout(50)
     chrome_driver.maximize_window()
-
     return chrome_driver
 
 
@@ -584,58 +499,19 @@ def shutdown_driver(chrome_driver):
     return True
 
 
-def main(data_directory, chrome_driver):
+def main(data_directory, in_url, chrome_driver):
     """
     Main function to start extracting data from the url page
     :return:
     """
+    in_url = in_url.strip(' ')
+    if not in_url.endswith('/'):
+        in_url += '/'
+    url_hash = get_md5_hash(in_url)
 
-    data_obj = {}
-    domain_attributes = {}
-    # url = 'http://softmeasure.zoy.org/ '
-    # url = 'http://bulk1.limeline.net/link.php?M=7520722&N=1704&L=147&F=H/'
-    # url = 'https://cin7550coltracktel.com/eTransfert75$DEPOSITyahoo/directing/easyweb.td.com/waw/idp/secquestions.php'
-    url = 'http://shiawase-power.com/'
-    # url = api.get_url()
-    url = url.strip(' ')
-    if not url.endswith('/'):
-        url += '/'
-    url_hash = get_md5_hash(url)
-
-    print(" ***** Processing %s  ***** " % url)
     print(" -------package_hash: %s" % url_hash)
-    domain, path = get_url_domain_n_path(url)
-    url_directory, url_icons_directory, domain_directory, domain_icons_directory = create_package(data_directory, url)
-    url_attributes = get_url_attributes(url_icons_directory, url_directory, url, chrome_driver)
-
-    if url != domain:
-        domain_attributes = get_domain_attributes(url_icons_directory, url_directory, domain, chrome_driver)
-    else:
-        domain_attributes['domain'] = domain
-        domain_attributes['domain_md5'] = url_hash
-        domain_attributes['domain_base64'] = url_attributes['url_base64']
-        domain_attributes['domain_entropy'] = url_attributes['url_entropy']
-        domain_attributes['domain_page_title'] = url_attributes['url_page_title']
-        domain_attributes['domain_favicons'] = url_attributes['url_favicons']
-        domain_attributes['domain_content_type'] = url_attributes['url_content_type']
-        domain_attributes['domain_total_favicon'] = url_attributes['url_total_favicon']
-        domain_attributes['domain_og_domains'] = url_attributes['url_og_domains']
-        domain_attributes['domain_total_og_domains'] = url_attributes['url_total_og_domains']
-        domain_attributes['domain_total_og_links'] = url_attributes['url_total_og_links']
-        domain_attributes['domain_entropy'] = url_attributes['url_entropy']
-        domain_attributes['domain_isHtml'] = url_attributes['url_isHtml']
-        domain_attributes['domain_file_type'] = url_attributes['url_file_type']
-        domain_attributes['is_favicon_match'] = 0
-        print("  -----  Domain Attributes Done ...... ")
-
-    data_obj.update(url_attributes)
-    data_obj.update(domain_attributes)
-    title_match = is_title_match(data_obj['domain_page_title'], data_obj['url_page_title'])
-    data_obj['title_match'] = title_match
-    data_obj['uri_length'] = len(path)
-    data_obj['timestamp'] = get_current_time()
-    data_obj['is_favicon_match'] = is_favicon_match(domain_attributes['domain_favicons'],
-                                                    url_attributes['url_favicons'])
+    url_dir, url_icons_dir, domain_dir, domain_icons_dir = create_package(data_directory, in_url)
+    data_obj = get_url_attributes(url_icons_dir, url_dir, in_url, chrome_driver)
 
     return data_obj
 
@@ -644,19 +520,15 @@ if __name__ == '__main__':
     """
     Program execution started from here
     """
-
     PROJ_DIR = os.path.dirname(os.path.realpath(__file__))
-    DATA_DIRECTORY = str(PROJ_DIR) + "/DATA/"
+    data_dir = str(PROJ_DIR) + "/DATA/"
+
+    url = "https://www.infosrequired.com/serviceacc/q4nzy=/signin?id=signin"
     while True:
         try:
-            start_time = datetime.now()
             driver = get_chrome_driver_instance()
-            data = main(DATA_DIRECTORY, driver)
+            data = main(data_dir, url, driver)
             print(json.dumps(data, indent=6, sort_keys=True))
-            db.insert_data(data)
             shutdown_driver(driver)
-
-            total_time = start_time - datetime.now()
-            print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds / 100000))
         except Exception as e:
             print("Exception %s in main function" % e)
