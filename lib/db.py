@@ -1,13 +1,14 @@
 import mysql.connector
 from mysql.connector import MySQLConnection, Error
 # import pymysql
-import sys
 import os
 import socket
 import hashlib
-
+import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 import config
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 
 def connect_db():
@@ -27,7 +28,9 @@ def connect_db():
         host=DATABASE_CONFIG['host'],
         user=DATABASE_CONFIG['user'],
         password=DATABASE_CONFIG['password'],
-        db=DATABASE_CONFIG['dbname']
+        db=DATABASE_CONFIG['dbname'],
+        charset='utf8',
+        use_unicode=True
     )
     return con
 
@@ -36,14 +39,19 @@ def execute_query(con, query):
     """Given any query and database connection, this function will execute the query and return the status True
     if successful
     """
+    # con.set_character_set('utf8')
     cursor = con.cursor()
+    print(query)
     try:
+        cursor.execute("set names utf8;")
+        cursor.execute('SET CHARACTER SET utf8;')
+        cursor.execute('SET character_set_connection=utf8;')
         cursor.execute(query)
         con.commit()
         cursor.close()
         return True
-    except:
-        return False
+    except Exception as e:
+        print(e)
 
 
 def add_column(con, table, col_name):

@@ -1,4 +1,3 @@
-import base64
 import json
 import sys
 import os
@@ -16,21 +15,6 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-def get_content_type(in_url):
-    """
-    A processed url needs to be input, i.e http://url.com or https://url.com
-    :param in_url:
-    :return: content type of a url
-    """
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0'}
-        content_type = requests.head(in_url, allow_redirects=True, verify=False, headers=headers).headers["Content-Type"]
-    except:
-        print("  -----  Error getting content type from url ...... ")
-        content_type = 'text/html'
-    return content_type
-
-
 def get_md5_hash(in_url):
     """
     generate md5 hash of the string, In this case, a url with http or https is provided for the synchronization
@@ -45,20 +29,6 @@ def get_md5_hash(in_url):
     except:
         md5_hash = ''
     return md5_hash
-
-
-def get_base64(in_url):
-    """
-    get the base64 of the string
-    :param in_url:
-    :return: base64 encoded string
-    """
-    try:
-        b64_encoded = base64.b64encode(in_url.encode())
-    except Exception as exp:
-        print("Error getting base64 of url or text with Exception \n %s" % exp)
-        b64_encoded = ''
-    return b64_encoded
 
 
 def get_page_title(chrome_driver):
@@ -88,7 +58,6 @@ def get_favicon_selenium(chrome_driver, directory):
     :return: total favicon and list of favicon
     """
     total_favicons = 0
-    hash_list = []
     rel = ""
     try:
         links = chrome_driver.find_elements_by_tag_name('link')
@@ -111,8 +80,7 @@ def get_favicon_selenium(chrome_driver, directory):
                 name = 'favicon_{}.{}'.format(total_favicons, favicon_ext)
             try:
                 icon = urllib2.urlopen(str(href))
-                md5_hash = save_favicon_to_directory(icon, name, path=directory)
-                hash_list.append(md5_hash)
+                save_favicon_to_directory(icon, name, path=directory)
                 total_favicons += 1
             except:
                 pass
@@ -131,9 +99,7 @@ def save_favicon_to_directory(icon, name, path):
     try:
         with open(name, "wb") as f:
             f.write(icon.read())
-            md5_hash = img_md5_hash(f)
             f.close()
-            return md5_hash
     except Exception as exp:
         print("Error while saving favicon to the directory \n %s" % exp)
 
@@ -150,28 +116,6 @@ def create_directory(dir_name):
     except Exception as exp:
         print("ERROR creating %s Directory, Exiting the code" % dir_name, " | with Exception %s" % exp)
         sys.exit(1)
-
-
-def img_md5_hash(image):
-    """
-    get md5 hash of an image
-    :param image:  image path or file
-    :return: md5 hash
-    """
-    m = hashlib.md5(open(image.name, 'r').read())
-    img_hash = m.hexdigest()
-    return img_hash
-
-
-def is_url_html(content_type):
-    """
-    check if the page on the url is an html page or not
-    :param content_type:
-    :return: True if url is html else False
-    """
-    if 'text/html' in content_type or 'text/plain' in content_type:
-        return True
-    return False
 
 
 def get_og_links(chrome_driver):
@@ -297,35 +241,25 @@ def get_url_attributes(url_directory, in_url, chrome_driver):
             html2txt.text_from_html(url_directory, file_path)
 
             head, body = get_head_body(file_path)
-            url_content_type = get_content_type(in_url)
             url_total_og_urls, url_og_urls_list = get_og_links(chrome_driver)
             url_total_favicons = get_favicon_selenium(chrome_driver, url_directory+'icons')
-            url_base64 = get_base64(in_url)
             page_title = get_page_title(chrome_driver)
             file_type = get_file_type(in_url)
-            is_html = is_url_html(url_content_type)
 
             data_obj.update({
                     'url_md5': url_hash,
                     'url_page_title': page_title,
-                    'url_content_type': url_content_type,
                     'url_total_og_links': url_total_og_urls,
                     'url_favicons': url_total_favicons,
                     'url_file_type': file_type,
-                    'url_isHtml': is_html,
                     'head': head,
                     'body': body
             })
-            if 'https' in str(in_url):
-                protocol = 'https'
-            else:
-                protocol = 'http'
-            json_data = {'url_base64': url_base64, 'protocol': protocol, 'title': page_title}
-            write_json(json_data, url_directory)
+
         except TimeoutException:
             retry += 1
             print("      -----  Timeout, Retrying  ...... ")
-            if retry >= 3:
+            if retry >= 1:
                 print("      -------    Leaving after 3 unsuccessful retry")
                 break
             continue
@@ -351,18 +285,33 @@ def get_chrome_driver_instance():
     :return:
     """
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--headless')
-    # chrome_options.add_argument('--disable-extensions')
+
+    # chrome_options.add_argument('--headless')
+    # chrome_options.add_argument('--enable-extensions')
     chrome_options.add_argument('--enable-safebrowsing')
     chrome_options.add_argument('--enable-web-security')
-    # chrome_options.add_argument('--allow-running-insecure-content')
-    # chrome_options.add_argument('--allow-insecure-localhost')
+    chrome_options.add_argument('disable-running-insecure-content')
+    chrome_options.add_argument('disable-insecure-localhost')
     chrome_options.add_argument('--enable-client-side-phishing-detection')
-    # chrome_options.add_argument('--safebrowsing-disable-download-protection')
+    chrome_options.add_argument('safebrowsing-enable-download-protection')
+
     chrome_driver = webdriver.Chrome(chrome_options=chrome_options)
-    chrome_driver.set_page_load_timeout(50)
-    chrome_driver.maximize_window()
+
     return chrome_driver
+
+    # chrome_options = webdriver.ChromeOpions()
+    # chrome_options.add_argument('--headless')
+    # # chrome_options.add_argument('--disable-extensions')
+    # chrome_options.add_argument('--enable-safebrowsing')
+    # chrome_options.add_argument('--enable-web-security')
+    # # chrome_options.add_argument('--allow-running-insecure-content')
+    # # chrome_options.add_argument('--allow-insecure-localhost')
+    # chrome_options.add_argument('--enable-client-side-phishing-detection')
+    # # chrome_options.add_argument('--safebrowsing-disable-download-protection')
+    # chrome_driver = webdriver.Chrome(chrome_options=chrome_options)
+    # chrome_driver.set_page_load_timeout(50)
+    # chrome_driver.maximize_window()
+    # return chrome_driver
 
 
 def shutdown_driver(chrome_driver):
@@ -387,9 +336,12 @@ def process_request(in_url, chrome_driver):
 
     url_dir, url_icons_dir = create_package(in_url)
     data_obj = get_url_attributes(url_dir, in_url, chrome_driver)
-    if 'text' in data_obj['url_content_type'] and data_obj['url_total_og_links'] == 0 and data_obj['url_isHtml'] and \
-            data_obj['url_page_title'] == '' and data_obj['url_file_type'] == -1 and \
-            data_obj['url_total_og_links'] == 0 and data_obj['head'] < 1 and data_obj['body'] < 1:
+
+    print(data_obj['url_total_og_links'], data_obj['url_page_title'], data_obj['url_file_type'],
+          data_obj['url_total_og_links'], data_obj['head'], data_obj['body'])
+
+    if data_obj['url_total_og_links'] == 0 and data_obj['url_page_title'] == '' and data_obj['url_file_type'] == -1 \
+            and data_obj['url_total_og_links'] == 0 and data_obj['head'] < 1 and data_obj['body'] < 1:
 
         verdict = "malicious"
     else:
@@ -402,21 +354,31 @@ if __name__ == '__main__':
     Program execution started from here
     """
 
-    with open("/home/shahid/projects/behaviouralClassifier/tmp/phishing_urls.csv", 'r') as f:
-        urls = f.readlines()
-        for url in urls:
-            url = url.split('\n')[0]
-            try:
-                status = urllib2.urlopen(url).code
-                if status == 200:
-                    try:
-                        driver = get_chrome_driver_instance()
-                        url_verdict = process_request(url, driver)
-                        shutdown_driver(driver)
-                    except Exception as e:
-                        print("Exception %s in main function" % e)
-                else:
-                    url_verdict = -1
-            except:
-                url_verdict =- 1
+    urls = ["http://documentary-baromet.000webhostapp.com/new/erasingin/myaccount/settings/",
+            'https://cheffoodservice.gb.net/mira/Signon.php?LOB=RBGLogon&_pageLabel=56c8230c929cf977d66e4e4b4c4a87ce',
+            'https://gangway.work/ru/rex/index.php',
+            'https://lasserbol.com/d/directing/easyweb.td.com/waw/idp/secquestions.php',
+            'http://191.96.249.41/chase/20cc6fab69cacb18215931a3c557c94d/login/?',
+            'http://181.215.195.9/chase/d863a91ec20aa96ca3449881ffa76a6e/login/?',
+            'https://vaisola.com/linkedin/uas/login/?email=Jackdavis@eureliosollutions.com'
+            ]
+    for url in urls:
+        try:
+            driver = get_chrome_driver_instance()
+            url_verdict = process_request(url, driver)
+            shutdown_driver(driver)
             print(url, url_verdict)
+        except Exception as e:
+            print("Exception %s in main function" % e)
+
+    # with open("/home/shahid/projects/behaviouralClassifier/tmp/phishing_urls.csv", 'r') as f:
+    #     urls = f.readlines()
+    #     for url in urls:
+    #         url = url.split('\n')[0]
+    #         try:
+    #             driver = get_chrome_driver_instance()
+    #             url_verdict = process_request(url, driver)
+    #             shutdown_driver(driver)
+    #         except Exception as e:
+    #             print("Exception %s in main function" % e)
+    #         print(url, url_verdict)

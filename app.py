@@ -93,9 +93,8 @@ def get_page_title(chrome_driver):
     # soup = BeautifulSoup(urllib2.urlopen(url))
     try:
         # title = soup.title.string
-        title = chrome_driver.title
-        title = title.replace("'", "''")
-        print(title)
+        title = chrome_driver.title.decode('utf-8')
+        # title = title.replace("'", "''")
     except Exception as exp:
         title = ''
         print("Error while extracting title from landing page with Exception \n %s" % exp)
@@ -592,11 +591,10 @@ def main(data_directory, chrome_driver):
 
     data_obj = {}
     domain_attributes = {}
-    # url = 'http://softmeasure.zoy.org/ '
-    # url = 'http://bulk1.limeline.net/link.php?M=7520722&N=1704&L=147&F=H/'
+    # url = 'http://mimobrazil.com/'
     # url = 'https://cin7550coltracktel.com/eTransfert75$DEPOSITyahoo/directing/easyweb.td.com/waw/idp/secquestions.php'
-    url = 'http://shiawase-power.com/'
-    # url = api.get_url()
+    # url = 'http://shiawase-power.com/'
+    url = api.get_url()
     url = url.strip(' ')
     if not url.endswith('/'):
         url += '/'
@@ -652,7 +650,7 @@ if __name__ == '__main__':
             start_time = datetime.now()
             driver = get_chrome_driver_instance()
             data = main(DATA_DIRECTORY, driver)
-            print(json.dumps(data, indent=6, sort_keys=True))
+            # print(json.dumps(data, indent=6, sort_keys=True))
             db.insert_data(data)
             shutdown_driver(driver)
 
