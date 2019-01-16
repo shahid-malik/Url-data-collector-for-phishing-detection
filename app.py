@@ -90,7 +90,6 @@ def get_page_title(chrome_driver):
     :param chrome_driver:
     :return: title (string)
     """
-    # soup = BeautifulSoup(urllib2.urlopen(url))
     try:
         # title = soup.title.string
         title = chrome_driver.title.decode('utf-8')
@@ -246,7 +245,6 @@ def get_og_domains(url_og_links):
     :return: total outgoing domains and list of outgoing domains
     """
     og_domains = []
-    # md5_og_domains = []
     for og_url in url_og_links:
         domain = get_md5_hash(get_url_domain_n_path(og_url)[0])
         og_domains.append(domain)
@@ -592,8 +590,6 @@ def main(data_directory, chrome_driver):
     data_obj = {}
     domain_attributes = {}
     # url = 'http://mimobrazil.com/'
-    # url = 'https://cin7550coltracktel.com/eTransfert75$DEPOSITyahoo/directing/easyweb.td.com/waw/idp/secquestions.php'
-    # url = 'http://shiawase-power.com/'
     url = api.get_url()
     url = url.strip(' ')
     if not url.endswith('/'):
@@ -650,7 +646,6 @@ if __name__ == '__main__':
             start_time = datetime.now()
             driver = get_chrome_driver_instance()
             data = main(DATA_DIRECTORY, driver)
-            # print(json.dumps(data, indent=6, sort_keys=True))
             db.insert_data(data)
             shutdown_driver(driver)
 

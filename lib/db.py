@@ -41,7 +41,6 @@ def execute_query(con, query):
     """
     # con.set_character_set('utf8')
     cursor = con.cursor()
-    print(query)
     try:
         cursor.execute("set names utf8;")
         cursor.execute('SET CHARACTER SET utf8;')
