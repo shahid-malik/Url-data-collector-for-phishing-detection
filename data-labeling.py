@@ -9,27 +9,14 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-def execute_query(con, query):
-    """
-    Given any query and database connection, this function will execute the query and return the status True
-    if successful
-    """
-    cursor = con.cursor()
-    try:
-        cursor.execute("set names utf8;")
-        cursor.execute('SET CHARACTER SET utf8;')
-        cursor.execute('SET character_set_connection=utf8;')
-        cursor.execute(query)
-        con.commit()
-        cursor.close()
-        return True
-    except Exception as e:
-        print(e)
-
-
 class Connection:
-
+    """
+    Data Base connection class
+    """
     def __init__(self):
+        """
+        constructor for connection class
+        """
         if socket.gethostbyname(socket.gethostname()) == '127.0.1.1':
             self.DATABASE_CONFIG = config.LOCAL_DATABASE_CONFIG
         else:
@@ -44,7 +31,6 @@ class Connection:
     def connect(self):
         """
         Create a mysql database connection
-        :return:
         :return:
         """
         con = mysql.connector.connect(
@@ -66,25 +52,53 @@ class Connection:
         update_query = "update %s set verdict='%s', verdict_update_timestamp='%s' where url_md5 like '%s';" % (
             self.table, url_data['verdict'], url_data['verdict_timestamp'], url_data['url_md5'])
 
-        query_status = execute_query(con, update_query)
+        query_status = self.execute_query(con, update_query)
         if query_status:
             print("  -----  Data Updated Successfully  ...... ")
 
-
-def get_url_verdict(url):
-    if 'Malicious' in url:
-        verdict = "Malicious"
-    else:
-        verdict = "Benign"
-    return verdict
+    def execute_query(self, con, query):
+        """
+        Given any query and database connection, this function will execute the query and return the status True
+        if successful
+        """
+        cursor = con.cursor()
+        try:
+            cursor.execute("set names utf8;")
+            cursor.execute('SET CHARACTER SET utf8;')
+            cursor.execute('SET character_set_connection=utf8;')
+            cursor.execute(query)
+            con.commit()
+            cursor.close()
+            return True
+        except Exception as e:
+            print(e)
 
 
 class URL:
-
+    """
+    Main URL class, It contains all the url processing logic
+    """
     def __init__(self):
+        """
+        Constructor
+        """
         self.verdict = 'Benign'
         self.verdict_timestamp = get_current_time()
         self.con = Connection()
+
+    def get_url_verdict(self, url):
+        """
+        Get the verdict from csv file. This csv file is been generated from outer system,
+        got a csv file from the external file and place it in the lib folder with the name
+        urls_verdict_result_v1.csv
+        :param url:
+        :return:
+        """
+        if 'Malicious' in url:
+            verdict = "Malicious"
+        else:
+            verdict = "Benign"
+        return verdict
 
     def read_url_file(self, in_file):
         """
@@ -97,7 +111,7 @@ class URL:
             with open(in_file) as f:
                 input_urls = f.readlines()
                 for url in input_urls:
-                    verdict = get_url_verdict(url)
+                    verdict = self.get_url_verdict(url)
                     url_dict.update({
                         'url_md5': url.split(',')[0],
                         'verdict': verdict,
@@ -105,15 +119,30 @@ class URL:
                     })
 
                     self.con.update_db_url_data(url_dict)
-        except:
+        except Exception as e:
+            print("Exception Occurs: %s" % e)
             return False
 
 
-if __name__ == "__main__":
-    cur_dir = os.path.dirname(__file__)
-    file_name = "urls_verdict_result"
-    file_version = "v1"
-    file_path = cur_dir+'/lib/'+file_name+'_'+file_version+'.csv'
+def main():
+    """
+    Main execution to start the processing for a url
+    :return:
+    """
+    args = sys.argv
+    if len(args) > 2 or len(args)<2:
+        print("Please provide the arguments in order as shown in example command")
+        print("\npython data-labeling.py v1\nor\npython data-labeling.py v2\n")
+        sys.exit(1)
+    else:
+        cur_dir = os.path.dirname(__file__)
+        file_name = "urls_verdict_result"
+        file_version = args[1]
+        file_path = cur_dir + '/lib/' + file_name + '_' + file_version + '.csv'
+        urls = URL()
+        urls.read_url_file(file_path)
 
-    urls = URL()
-    urls.read_url_file(file_path)
+
+if __name__ == "__main__":
+
+    main()
