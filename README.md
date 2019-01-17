@@ -32,7 +32,7 @@ url = 'http://ide-europe.org'
 NOTES
 ==============================
 1- content type needs to be more dynamic
-
+2- create domain folder only if url is not equal to domain
 
 Issues
 ==============================

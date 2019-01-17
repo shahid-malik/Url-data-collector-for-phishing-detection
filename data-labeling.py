@@ -135,11 +135,12 @@ def main():
         print("\npython data-labeling.py v1\nor\npython data-labeling.py v2\n")
         sys.exit(1)
     else:
-        cur_dir = os.path.dirname(__file__)
+        cur_dir = os.path.dirname(os.path.realpath(__file__))
         file_name = "urls_verdict_result"
         file_version = args[1]
         file_path = cur_dir + '/lib/' + file_name + '_' + file_version + '.csv'
         urls = URL()
+
         urls.read_url_file(file_path)
 
 
