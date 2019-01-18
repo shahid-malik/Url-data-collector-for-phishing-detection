@@ -600,7 +600,7 @@ def read_manual_file(in_file):
     return urls_list
 
 
-def main(url, data_directory, chrome_driver):
+def main(data_directory, chrome_driver):
     """
     Main function to start extracting data from the url page
     :return:
@@ -608,8 +608,7 @@ def main(url, data_directory, chrome_driver):
 
     data_obj = {}
     domain_attributes = {}
-    # url = 'http://mimobrazil.com/'
-    # url = api.get_url()
+    url = api.get_url()
     url = url.strip(' ')
     if not url.endswith('/'):
         url += '/'
@@ -661,16 +660,14 @@ if __name__ == '__main__':
     PROJ_DIR = os.path.dirname(os.path.realpath(__file__))
     DATA_DIRECTORY = str(PROJ_DIR) + "/DATA/"
     while True:
-        urls = read_manual_file('/home/shahid/Downloads/https___www.blusheee.com_ Top target pages 2019-01-17.csv')
-        for url in urls:
-            try:
-                start_time = datetime.now()
-                driver = get_chrome_driver_instance()
-                data = main(url, DATA_DIRECTORY, driver)
-                db.insert_data(data)
-                shutdown_driver(driver)
+        try:
+            start_time = datetime.now()
+            driver = get_chrome_driver_instance()
+            data = main(DATA_DIRECTORY, driver)
+            db.insert_data(data)
+            shutdown_driver(driver)
 
-                total_time = start_time - datetime.now()
-                print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds / 100000))
-            except Exception as e:
-                print("Exception %s in main function" % e)
+            total_time = start_time - datetime.now()
+            print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds / 100000))
+        except Exception as e:
+            print("Exception %s in main function" % e)
