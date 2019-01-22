@@ -93,7 +93,7 @@ def get_page_title(chrome_driver):
     try:
         # title = soup.title.string
         title = chrome_driver.title.decode('utf-8')
-        # title = title.replace("'", "''")
+        title = title.replace("'", "''")
     except Exception as exp:
         title = ''
         print("Error while extracting title from landing page with Exception \n %s" % exp)
