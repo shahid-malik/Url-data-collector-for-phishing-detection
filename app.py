@@ -281,8 +281,8 @@ def is_title_match(url_title, domain_title):
     :return:
     """
     if url_title == domain_title:
-        return True
-    return False
+        return 1
+    return 0
 
 
 def get_file_type(url):
@@ -662,6 +662,7 @@ if __name__ == '__main__':
     while True:
         try:
             start_time = datetime.now()
+            print("  -----  Start Time   %s ......" % start_time)
             driver = get_chrome_driver_instance()
             data = main(DATA_DIRECTORY, driver)
             db.insert_data(data)

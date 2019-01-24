@@ -1,7 +1,15 @@
 
 # URL attributes collection for phishing attacks
 
-Sttaus
+Commands
+==============================
+ssh osama@10.0.8.144
+top4glory
+
+To run: python bl_classify.py --urltxt 20181126-0.8-0.9-input.txt --prec med > 20181126-0.8-0.9-output.txt
+
+
+Status
 ==============================
 file_type = -1 (authorization required)
 
