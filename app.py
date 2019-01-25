@@ -600,7 +600,7 @@ def read_manual_file(in_file):
     return urls_list
 
 
-def main(data_directory, chrome_driver):
+def start_url(data_directory, chrome_driver):
     """
     Main function to start extracting data from the url page
     :return:
@@ -664,7 +664,7 @@ if __name__ == '__main__':
             start_time = datetime.now()
             print("  -----  Start Time   %s ......" % start_time)
             driver = get_chrome_driver_instance()
-            data = main(DATA_DIRECTORY, driver)
+            data = start_url(DATA_DIRECTORY, driver)
             db.insert_data(data)
             shutdown_driver(driver)
 

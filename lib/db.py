@@ -47,7 +47,7 @@ def execute_query(con, query):
         cursor.execute('SET character_set_connection=utf8;')
         cursor.execute(query)
         con.commit()
-        cursor.close()
+        con.close()
         return True
     except Exception as e:
         print(e)
