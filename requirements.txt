@@ -9,7 +9,9 @@ get==2018.11.19
 idna==2.8
 image==1.5.27
 lxml==4.2.5
+mysql==0.0.2
 mysql-connector-python==8.0.13
+MySQL-python==1.2.5
 Pillow==5.3.0
 post==2018.11.20
 protobuf==3.6.1

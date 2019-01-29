@@ -1,12 +1,14 @@
 import mysql.connector
-from mysql.connector import MySQLConnection, Error
-# import pymysql
+from mysql.connector import Error
 import os
 import socket
 import hashlib
 import sys
+from contextlib import closing
+
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 import config
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -39,18 +41,17 @@ def execute_query(con, query):
     """Given any query and database connection, this function will execute the query and return the status True
     if successful
     """
-    # con.set_character_set('utf8')
-    cursor = con.cursor()
-    try:
-        cursor.execute("set names utf8;")
-        cursor.execute('SET CHARACTER SET utf8;')
-        cursor.execute('SET character_set_connection=utf8;')
-        cursor.execute(query)
-        con.commit()
-        con.close()
-        return True
-    except Exception as e:
-        print(e)
+    with closing(con.cursor()) as cursor:
+        try:
+            cursor.execute("set names utf8;")
+            cursor.execute('SET CHARACTER SET utf8;')
+            cursor.execute('SET character_set_connection=utf8;')
+            cursor.execute(query)
+            con.commit()
+            con.close()
+            return True
+        except Exception as e:
+            print(e)
 
 
 def add_column(con, table, col_name):
@@ -68,7 +69,6 @@ def add_column(con, table, col_name):
             print("Column added successfully")
     except Exception as e:
         print("Issue adding new column to the table with exception", e)
-        pass
 
 
 def get_md5_hash(url):
@@ -157,17 +157,17 @@ def check_if_url_processed(url):
     """
     try:
         conn = connect_db()
-        cursor = conn.cursor()
-        url_hash = get_md5_hash(url)
-        query = "select * from package_features where url_md5='%s';" % url_hash
-        cursor.execute(query)
-        total_rows = cursor.rowcount
-        if total_rows < 1:
-            conn.close()
-            return True
-        else:
-            conn.close()
-            return False
+        with closing(conn.cursor()) as cursor:
+            url_hash = get_md5_hash(url)
+            query = "select * from package_features where url_md5='%s';" % url_hash
+            cursor.execute(query)
+            total_rows = cursor.rowcount
+            if total_rows < 1:
+                conn.close()
+                return True
+            else:
+                conn.close()
+                return False
     except Error as e:
         print("Exception %s in check if url processed method" % e)
 
@@ -191,7 +191,6 @@ def main():
     add_column(conn, DATA_TABLE, 'total_at_the_rate')
     conn.close()
     # (insert_data(DATA_TABLE, data))
-
 
 # if __name__ == "__main__":
 

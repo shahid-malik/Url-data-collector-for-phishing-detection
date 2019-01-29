@@ -12,7 +12,6 @@ import requests
 import hashlib
 import magic
 import urllib
-from BeautifulSoup import BeautifulSoup
 from selenium import webdriver
 from lib import api, db, html2txt
 from selenium.common.exceptions import TimeoutException
@@ -98,46 +97,6 @@ def get_page_title(chrome_driver):
         title = ''
         print("Error while extracting title from landing page with Exception \n %s" % exp)
     return title
-
-
-def get_favicon(url, directory):
-    """
-    Download the favicons to the directory of the domain or url - > UrlHash/Domain/icons or UrlHash/url/icons
-    :param url:
-    :param directory:
-    :return: total no of fav icons
-    """
-    total_favicons = 0
-
-    try:
-        page = urllib2.urlopen(url)
-        soup = BeautifulSoup(page.read())
-        # favicon_links = soup.findAll("link", {'rel': ['icon', 'mask-icon', 'apple-touch-icon', 'shortcut icon',
-        #                                               'apple-touch-icon-precomposed']})
-        favicon_links = soup.findAll("link", {'rel': ['icon', 'mask-icon', 'apple-touch-icon', 'shortcut icon',
-                                                      'apple-touch-icon-precomposed']})
-        for favicon in favicon_links:
-            try:
-                icon = urllib2.urlopen(favicon['href'])
-            except:
-                raw_url = favicon['href']
-                icon_url = 'http://' + raw_url[raw_url.find('www'):]
-                icon = urllib2.urlopen(icon_url)
-
-            favicon_ext = favicon['href'].split('.')[-1]
-            if not favicon_ext == 'svg':
-                name = 'favicon_{}.ico'.format(total_favicons)
-            else:
-                name = 'favicon_{}.{}'.format(total_favicons, favicon_ext)
-            save_favicon_to_directory(icon, name, path=directory)
-            total_favicons += 1
-    except:
-        if requests.head(url).status_code == 302:
-            # redirect_url = requests.head(url).next.path_url
-            redirect_url = requests.head(url, allow_redirects=True).url
-            get_favicon(redirect_url, directory)
-
-    return total_favicons
 
 
 def get_favicon_selenium(chrome_driver, directory):
@@ -292,7 +251,7 @@ def get_file_type(url):
     :return:
     """
     mime = magic.Magic(mime=True)
-    output = "output"
+    output = "tmp/output"
     try:
         status = urllib2.urlopen(url).code
         if status:
@@ -563,7 +522,7 @@ def get_chrome_driver_instance():
     chrome_options.add_argument('--allow-insecure-localhost')
     chrome_options.add_argument('--disable-client-side-phishing-detection')
     chrome_options.add_argument('--safebrowsing-disable-download-protection')
-    chrome_driver = webdriver.Chrome(chrome_options=chrome_options)
+    chrome_driver = webdriver.Chrome('/usr/local/bin/chromedriver', chrome_options=chrome_options)
     chrome_driver.set_page_load_timeout(50)
     chrome_driver.maximize_window()
 
@@ -581,48 +540,35 @@ def shutdown_driver(chrome_driver):
     return True
 
 
-def read_manual_file(in_file):
-    """
-    Function to read the csv file of urls with verdict to insert into the database
-    :param in_file:
-    :return:
-    """
-    urls_list = []
-    try:
-        with open(in_file) as f:
-            input_urls = f.readlines()
-            for url in input_urls:
-                url = url.split(',')[0]
-                urls_list.append(url)
-    except Exception as e:
-        print("Exception Occurs: %s" % e)
-        return False
-    return urls_list
-
-
-def start_url(data_directory, chrome_driver):
+def start_processing_url(data_directory, chrome_driver):
     """
     Main function to start extracting data from the url page
+    :param data_directory:
+    :param chrome_driver:
+    :return:
     :return:
     """
 
     data_obj = {}
     domain_attributes = {}
     url = api.get_url()
+    if not url:
+        url = api.get_url()
     url = url.strip(' ')
     if not url.endswith('/'):
         url += '/'
     url_hash = get_md5_hash(url)
 
     print(" ***** Processing %s  ***** " % url)
-    print(" -------package_hash: %s" % url_hash)
+    print("  -----  Start Time   %s ......" % start_time)
+    print("  -----  Package_hash: %s" % url_hash)
     domain, path = get_url_domain_n_path(url)
     url_directory, url_icons_directory, domain_directory, domain_icons_directory = create_package(data_directory, url)
     url_attributes = get_url_attributes(url_icons_directory, url_directory, url, chrome_driver)
 
     if url != domain:
         domain_attributes = get_domain_attributes(url_icons_directory, url_directory, domain, chrome_driver)
-    else:
+    elif url_attributes:
         domain_attributes['domain'] = domain
         domain_attributes['domain_md5'] = url_hash
         domain_attributes['domain_base64'] = url_attributes['url_base64']
@@ -642,12 +588,14 @@ def start_url(data_directory, chrome_driver):
 
     data_obj.update(url_attributes)
     data_obj.update(domain_attributes)
-    title_match = is_title_match(data_obj['domain_page_title'], data_obj['url_page_title'])
-    data_obj['title_match'] = title_match
+    if url_attributes or domain_attributes:
+        title_match = is_title_match(data_obj['domain_page_title'], data_obj['url_page_title'])
+        data_obj['is_favicon_match'] = is_favicon_match(domain_attributes['domain_favicons'],
+                                                        url_attributes['url_favicons'])
+        data_obj['title_match'] = title_match
+
     data_obj['uri_length'] = len(path)
     data_obj['timestamp'] = get_current_time()
-    data_obj['is_favicon_match'] = is_favicon_match(domain_attributes['domain_favicons'],
-                                                    url_attributes['url_favicons'])
 
     return data_obj
 
@@ -662,10 +610,12 @@ if __name__ == '__main__':
     while True:
         try:
             start_time = datetime.now()
-            print("  -----  Start Time   %s ......" % start_time)
             driver = get_chrome_driver_instance()
-            data = start_url(DATA_DIRECTORY, driver)
-            db.insert_data(data)
+            data = start_processing_url(DATA_DIRECTORY, driver)
+            if len(data.keys()) > 5:
+                db.insert_data(data)
+            else:
+                print("  -----  Skipping DB entry due to data issue ......")
             shutdown_driver(driver)
 
             total_time = start_time - datetime.now()

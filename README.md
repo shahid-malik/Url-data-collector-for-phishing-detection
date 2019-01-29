@@ -11,6 +11,11 @@ Issues
 
 1- handling 429 status code
 2- create icons directory only when there is any icon downloaded otherwise no directory
+3- url_base64 
+   
+    http://kokomoliving.com/
+4- Script stuck issue
+  
 
 
 Commands

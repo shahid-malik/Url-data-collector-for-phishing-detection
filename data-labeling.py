@@ -3,8 +3,10 @@ import sys
 import socket
 import mysql.connector
 from app import get_current_time
+
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
 import config
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -13,6 +15,7 @@ class Connection:
     """
     Data Base connection class
     """
+
     def __init__(self):
         """
         constructor for connection class
@@ -56,7 +59,8 @@ class Connection:
         if query_status:
             print("  -----  Data Updated Successfully  ...... ")
 
-    def execute_query(self, con, query):
+    @staticmethod
+    def execute_query(con, query):
         """
         Given any query and database connection, this function will execute the query and return the status True
         if successful
@@ -78,6 +82,7 @@ class URL:
     """
     Main URL class, It contains all the url processing logic
     """
+
     def __init__(self):
         """
         Constructor
@@ -86,7 +91,8 @@ class URL:
         self.verdict_timestamp = get_current_time()
         self.con = Connection()
 
-    def get_url_verdict(self, url):
+    @staticmethod
+    def get_url_verdict(url):
         """
         Get the verdict from csv file. This csv file is been generated from outer system,
         got a csv file from the external file and place it in the lib folder with the name
@@ -130,7 +136,7 @@ def main():
     :return:
     """
     args = sys.argv
-    if len(args) > 2 or len(args)<2:
+    if len(args) > 2 or len(args) < 2:
         print("Please provide the arguments in order as shown in example command")
         print("\npython data-labeling.py v1\nor\npython data-labeling.py v2\n")
         sys.exit(1)
@@ -145,5 +151,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()
