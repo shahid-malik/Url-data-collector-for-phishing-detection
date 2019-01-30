@@ -15,9 +15,16 @@ import urllib
 from selenium import webdriver
 from lib import api, db, html2txt
 from selenium.common.exceptions import TimeoutException
+
 requests.packages.urllib3.disable_warnings()
 reload(sys)
 sys.setdefaultencoding('utf8')
+
+# Set the default timeout in seconds
+import socket
+
+timeout = 50
+socket.setdefaulttimeout(timeout)
 
 
 def get_content_type(url):
@@ -258,7 +265,7 @@ def get_file_type(url):
             urllib.urlretrieve(url, output)
             mimes = mime.from_file(output)
             return mimes
-    except:
+    except Exception as ex:
         return -1
 
 
