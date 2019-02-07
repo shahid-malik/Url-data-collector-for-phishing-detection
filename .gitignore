@@ -7,3 +7,4 @@ geckodriver.log
 output.html
 output*
 *.pyc
+tmp

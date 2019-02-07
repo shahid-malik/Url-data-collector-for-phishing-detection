@@ -10,6 +10,7 @@ from BeautifulSoup import BeautifulSoup
 from selenium import webdriver
 from lib import html2txt
 from selenium.common.exceptions import TimeoutException
+
 requests.packages.urllib3.disable_warnings()
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -199,18 +200,23 @@ def create_package(in_url):
     proj_dir = os.path.dirname(os.path.realpath(__file__))
     data_directory = str(proj_dir) + "/fishing_package_data/"
     url_hash = get_md5_hash(in_url)
-    PACKAGE_DIRECTORY = data_directory + url_hash + '/'
-    create_directory(PACKAGE_DIRECTORY)
+    package_directory = data_directory + url_hash + '/'
+    create_directory(package_directory)
     if not in_url.endswith('/'):
         in_url += '/'
 
-    URL_ICONS_DIRECTORY = PACKAGE_DIRECTORY + 'icons/'
-    create_directory(PACKAGE_DIRECTORY)
-    create_directory(URL_ICONS_DIRECTORY)
-    return PACKAGE_DIRECTORY, URL_ICONS_DIRECTORY
+    url_icons_directory = package_directory + 'icons/'
+    create_directory(package_directory)
+    create_directory(url_icons_directory)
+    return package_directory, url_icons_directory
 
 
 def get_head_body(html_page):
+    """
+    Get the head and body part of the url
+    :param html_page:
+    :return:
+    """
     file_path = "file://%s" % html_page
     page = urllib2.urlopen(file_path).read()
 
@@ -242,18 +248,18 @@ def get_url_attributes(url_directory, in_url, chrome_driver):
 
             head, body = get_head_body(file_path)
             url_total_og_urls, url_og_urls_list = get_og_links(chrome_driver)
-            url_total_favicons = get_favicon_selenium(chrome_driver, url_directory+'icons')
+            url_total_favicons = get_favicon_selenium(chrome_driver, url_directory + 'icons')
             page_title = get_page_title(chrome_driver)
             file_type = get_file_type(in_url)
 
             data_obj.update({
-                    'url_md5': url_hash,
-                    'url_page_title': page_title,
-                    'url_total_og_links': url_total_og_urls,
-                    'url_favicons': url_total_favicons,
-                    'url_file_type': file_type,
-                    'head': head,
-                    'body': body
+                'url_md5': url_hash,
+                'url_page_title': page_title,
+                'url_total_og_links': url_total_og_urls,
+                'url_favicons': url_total_favicons,
+                'url_file_type': file_type,
+                'head': head,
+                'body': body
             })
 
         except TimeoutException:
@@ -284,8 +290,9 @@ def get_chrome_driver_instance():
     initiate chrome driver instance
     :return:
     """
-    chrome_options = webdriver.ChromeOptions()
 
+    """
+    chrome_options = webdriver.ChromeOptions()
     # chrome_options.add_argument('--headless')
     # chrome_options.add_argument('--enable-extensions')
     chrome_options.add_argument('--enable-safebrowsing')
@@ -294,24 +301,69 @@ def get_chrome_driver_instance():
     chrome_options.add_argument('disable-insecure-localhost')
     chrome_options.add_argument('--enable-client-side-phishing-detection')
     chrome_options.add_argument('safebrowsing-enable-download-protection')
+    chrome_driver = webdriver.Chrome(chrome_options=chrome_options)
+    return chrome_driver
+    """
+
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument("--disable-gpu")
+    # chrome_options.add_argument("no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-extensions")
+    # chrome_options.add_argument('--profile-directory=Default')
+
+    chrome_options.add_argument("user-data-dir=/home/shahid/.config/google-chrome")
+
+    # chrome_options.add_argument("--enable-stats-collection-bindings")
+    # chrome_options.add_argument("--enable-stats-table")
+    # chrome_options.add_argument("--task-profiler")
+    # chrome_options.add_argument("--dump-blink-runtime-call-stats")
+
+    # chrome_options.add_argument("--no-sandbox")
+
+    # chrome_options.add_argument('--enable-safebrowsing')
+    # chrome_options.add_argument('--enable-safebrowsing-malware')
+    # chrome_options.add_argument('--enable-web-security')
+    # chrome_options.add_argument('--allow-running-insecure-content')
+    # chrome_options.add_argument('--allow-insecure-localhost')
+    # chrome_options.add_argument('--enable-client-side-phishing-detection')
+    # chrome_options.add_argument('--safebrowsing-enable-download-protection')
+    # chrome_options.add_argument("--webview-enable-safebrowsing-support")
+    # chrome_options.add_argument("--enable-potentially-annoying-security-features")
+    # chrome_options.add_argument("--enable-strict-mixed-content-checking")
+
+    # prefs = {
+    # "safebrowsing.enabled": True,
+    # "safebrowsing.malware.enabled": True,
+    # }
+    # chrome_options.add_experimental_option("prefs", prefs)
 
     chrome_driver = webdriver.Chrome(chrome_options=chrome_options)
+    chrome_driver.set_page_load_timeout(5)
 
     return chrome_driver
 
-    # chrome_options = webdriver.ChromeOpions()
-    # chrome_options.add_argument('--headless')
-    # # chrome_options.add_argument('--disable-extensions')
-    # chrome_options.add_argument('--enable-safebrowsing')
-    # chrome_options.add_argument('--enable-web-security')
-    # # chrome_options.add_argument('--allow-running-insecure-content')
-    # # chrome_options.add_argument('--allow-insecure-localhost')
-    # chrome_options.add_argument('--enable-client-side-phishing-detection')
-    # # chrome_options.add_argument('--safebrowsing-disable-download-protection')
-    # chrome_driver = webdriver.Chrome(chrome_options=chrome_options)
-    # chrome_driver.set_page_load_timeout(50)
-    # chrome_driver.maximize_window()
-    # return chrome_driver
+
+def get_firefox_driver_instance():
+    """
+    initiate firefox driver instance
+    :return:
+    """
+    fp = webdriver.FirefoxProfile()
+
+    fp.set_preference("browser.safebrowsing.blockedURIs.enabled", True)
+    fp.set_preference("browser.safebrowsing.downloads.enabled", True)
+    fp.set_preference("browser.safebrowsing.enabled", True)
+    fp.set_preference("browser.safebrowsing.forbiddenURIs.enabled", True)
+    fp.set_preference("browser.safebrowsing.malware.enabled", True)
+    fp.set_preference("browser.safebrowsing.phishing.enabled", True)
+    fp.set_preference("security.warn_entering_secure", True)
+    fp.set_preference("webdriver_accept_untrusted_certs", False)
+
+    fp.update_preferences()
+    firefox_driver = webdriver.Firefox(firefox_profile=fp)
+    return firefox_driver
 
 
 def shutdown_driver(chrome_driver):
@@ -354,17 +406,21 @@ if __name__ == '__main__':
     Program execution started from here
     """
 
-    urls = ["http://documentary-baromet.000webhostapp.com/new/erasingin/myaccount/settings/",
-            'https://cheffoodservice.gb.net/mira/Signon.php?LOB=RBGLogon&_pageLabel=56c8230c929cf977d66e4e4b4c4a87ce',
-            'https://gangway.work/ru/rex/index.php',
-            'https://lasserbol.com/d/directing/easyweb.td.com/waw/idp/secquestions.php',
-            'http://191.96.249.41/chase/20cc6fab69cacb18215931a3c557c94d/login/?',
-            'http://181.215.195.9/chase/d863a91ec20aa96ca3449881ffa76a6e/login/?',
-            'https://vaisola.com/linkedin/uas/login/?email=Jackdavis@eureliosollutions.com'
-            ]
+    urls = [  # "http://documentary-baromet.000webhostapp.com/new/erasingin/myaccount/settings/",
+        # 'https://cheffoodservice.gb.net/mira/Signon.php?LOB=RBGLogon&_pageLabel=56c8230c929cf977d66e4e4b4c4a87ce',
+        # 'https://gangway.work/ru/rex/index.php',
+        # 'https://lasserbol.com/d/directing/easyweb.td.com/waw/idp/secquestions.php',
+        # 'http://191.96.249.41/chase/20cc6fab69cacb18215931a3c557c94d/login/?',
+        # 'http://181.215.195.9/chase/d863a91ec20aa96ca3449881ffa76a6e/login/?',
+        # 'https://vaisola.com/linkedin/uas/login/?email=Jackdavis@eureliosollutions.com',
+        'http://crm.rasterflex.pl/sugarcrm/custom/wp-service/Netfix/Net-International/index.php',
+        'http://martyoungverifiers.com/.well-known/chase/',
+        'https://microsoftlne.com/',
+    ]
     for url in urls:
         try:
             driver = get_chrome_driver_instance()
+            # driver = get_firefox_driver_instance()
             url_verdict = process_request(url, driver)
             shutdown_driver(driver)
             print(url, url_verdict)
