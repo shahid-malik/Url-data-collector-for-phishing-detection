@@ -558,8 +558,8 @@ def start_processing_url(data_directory, chrome_driver):
 
     data_obj = {}
     domain_attributes = {}
-    # url = api.get_url()
-    url = 'https://mega.nz/#!8GoSXTqR!MlHyanom-4SjnlGf_GSuL74UNFO_eE-IEr8tAhQC_rI/'
+    url = api.get_url()
+    # url = 'https://mega.nz/#!8GoSXTqR!MlHyanom-4SjnlGf_GSuL74UNFO_eE-IEr8tAhQC_rI/'
     if not url:
         url = api.get_url()
     url = url.strip(' ')
