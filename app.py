@@ -11,9 +11,11 @@ import urllib2
 import requests
 import hashlib
 import magic
+import socket
 import urllib
 from selenium import webdriver
 from lib import api, db, html2txt
+from PIL import Image
 from selenium.common.exceptions import TimeoutException
 
 requests.packages.urllib3.disable_warnings()
@@ -21,7 +23,6 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 # Set the default timeout in seconds
-import socket
 
 timeout = 50
 socket.setdefaulttimeout(timeout)
@@ -316,6 +317,62 @@ def create_screenshot(directory_path, chrome_driver):
         print("Exception in getting screenshot %s" % exp)
 
 
+def fullpage_screenshot(directory_path, chrome_driver):
+    file = directory_path + "screenshot.png"
+
+    try:
+        total_width = chrome_driver.execute_script("return document.body.offsetWidth")
+        total_height = chrome_driver.execute_script("return document.body.parentNode.scrollHeight")
+        viewport_width = chrome_driver.execute_script("return document.body.clientWidth")
+        viewport_height = chrome_driver.execute_script("return window.innerHeight")
+        rectangles = []
+
+        i = 0
+        while i < total_height:
+            ii = 0
+            top_height = i + viewport_height
+            if top_height > total_height:
+                top_height = total_height
+            while ii < total_width:
+                top_width = ii + viewport_width
+                if top_width > total_width:
+                    top_width = total_width
+                rectangles.append((ii, i, top_width, top_height))
+                ii = ii + viewport_width
+            i = i + viewport_height
+        stitched_image = Image.new('RGB', (total_width, total_height))
+        previous = None
+        part = 0
+
+        for rectangle in rectangles:
+            if not previous is None:
+                try:
+                    chrome_driver.execute_script("window.scrollTo({0}, {1})".format(rectangle[0], rectangle[1]))
+                    time.sleep(0.2)
+                    chrome_driver.execute_script(
+                        "document.getElementById('topnav').setAttribute('style', 'position: absolute; top: 0px;');")
+                    time.sleep(0.2)
+                except:
+                    pass
+                time.sleep(0.2)
+            file_name = "part_{0}.png".format(part)
+            chrome_driver.get_screenshot_as_file(file_name)
+            screenshot = Image.open(file_name)
+            if rectangle[1] + viewport_height > total_height:
+                offset = (rectangle[0], total_height - viewport_height)
+            else:
+                offset = (rectangle[0], rectangle[1])
+            stitched_image.paste(screenshot, offset)
+            del screenshot
+            os.remove(file_name)
+            part = part + 1
+            previous = rectangle
+        stitched_image.save(file)
+        return True
+    except:
+        pass
+
+
 def create_package(data_directory, url):
     """
     Create a package with domain and url directories
@@ -379,7 +436,8 @@ def get_domain_attributes(domain_icons_directory, domain_directory, domain, chro
         try:
             chrome_driver.get(domain)
 
-            create_screenshot(domain_directory, chrome_driver)
+            # create_screenshot(domain_directory, chrome_driver)
+            fullpage_screenshot(domain_directory, chrome_driver)
             file_path = save_html(domain_directory, chrome_driver)
             html2txt.text_from_html(domain_directory, file_path)
 
@@ -440,7 +498,9 @@ def get_url_attributes(url_icon_directory, url_directory, url, chrome_driver):
         try:
             chrome_driver.get(url)
 
-            create_screenshot(url_directory, chrome_driver)
+            # create_screenshot(url_directory, chrome_driver)
+            fullpage_screenshot(url_directory, chrome_driver)
+
             file_path = save_html(url_directory, chrome_driver)
             html2txt.text_from_html(url_directory, file_path)
 

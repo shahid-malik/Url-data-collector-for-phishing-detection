@@ -142,7 +142,7 @@ def main():
         sys.exit(1)
     else:
         cur_dir = os.path.dirname(os.path.realpath(__file__))
-        file_name = "urls_verdict_result"
+        file_name = "urls_verdict_result"  # urls_verdict_result_v1 or urls_verdict_result_v2
         file_version = args[1]
         file_path = cur_dir + '/lib/' + file_name + '_' + file_version + '.csv'
         urls = URL()
