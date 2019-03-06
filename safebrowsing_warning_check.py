@@ -228,7 +228,7 @@ def get_head_body(html_page):
 
 def get_url_attributes(url_directory, in_url, chrome_driver):
     """
-    Get attributes from url
+    Get attributes.csv from url
     :type in_url: object
     :param url_directory:
     :param in_url:

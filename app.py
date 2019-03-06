@@ -36,8 +36,8 @@ def get_content_type(url):
     """
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0'}
-        content_type = requests.head(url, allow_redirects=True, verify=False, headers=headers).headers["Content-Type"]
-    except:
+        content_type = requests.head(url, allow_redirects=True, timeout=5, verify=False, headers=headers).headers["Content-Type"]
+    except requests.exceptions.Timeout:
         print("  -----  Error getting content type from url ...... ")
         content_type = 'text/html'
     return content_type
@@ -422,7 +422,7 @@ def is_favicon_match(url_favicon, domain_favicon):
 
 def get_domain_attributes(domain_icons_directory, domain_directory, domain, chrome_driver):
     """
-    Get domain attributes
+    Get domain attributes.csv
     :param domain_icons_directory:
     :param domain_directory:
     :param domain:
@@ -484,7 +484,7 @@ def get_domain_attributes(domain_icons_directory, domain_directory, domain, chro
 
 def get_url_attributes(url_icon_directory, url_directory, url, chrome_driver):
     """
-    Get attributes from url
+    Get attributes.csv from url
     :param url_icon_directory:
     :param url_directory:
     :param url:
@@ -619,7 +619,7 @@ def start_processing_url(data_directory, chrome_driver):
     data_obj = {}
     domain_attributes = {}
     url = api.get_url()
-    # url = 'https://mega.nz/#!8GoSXTqR!MlHyanom-4SjnlGf_GSuL74UNFO_eE-IEr8tAhQC_rI/'
+    url = 'https://mega.nz/#!KpRAFK6Q!dRtfzwmJl9VF-6ScHduEt06788pwP--EQmJ8qUf2cUY/'
     if not url:
         url = api.get_url()
     url = url.strip(' ')
