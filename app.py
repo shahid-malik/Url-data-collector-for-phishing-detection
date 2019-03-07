@@ -13,6 +13,7 @@ import hashlib
 import magic
 import socket
 import urllib
+from os.path import expanduser
 from selenium import webdriver
 from lib import api, db, html2txt
 from PIL import Image
@@ -674,7 +675,8 @@ if __name__ == '__main__':
     """
 
     PROJ_DIR = os.path.dirname(os.path.realpath(__file__))
-    DATA_DIRECTORY = str(PROJ_DIR) + "/DATA/"
+    home_dir = expanduser('~')
+    DATA_DIRECTORY = home_dir+"/data/"
     while True:
         try:
             start_time = datetime.now()

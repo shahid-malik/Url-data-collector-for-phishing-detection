@@ -33,7 +33,8 @@ def get_url():
                         return req.json()['url']
             except:
                 with open('lib/phishData/phishing_urls.txt', 'a') as f_writer:
-                    f_writer.write(req.json()['url']+'/n')
+                    f_writer.write(req.json()['url'])
+                    f_writer.write("\n")
                 # print("Error Processing from api in URL: %s and Exception: %s" % (req.json()['url'], e))
                 return get_url()
         except:
