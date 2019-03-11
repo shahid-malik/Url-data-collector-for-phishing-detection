@@ -8,3 +8,6 @@ output.html
 output*
 *.pyc
 tmp
+lib/phishData/phishing_urls.txt
+lib/urls_verdict_result_v4.csv
+
