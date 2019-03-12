@@ -1,6 +1,9 @@
+from datetime import datetime
 import os
 import sys
 import socket
+import time
+
 import mysql.connector
 from app import get_current_time
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
@@ -8,6 +11,16 @@ import config
 
 reload(sys)
 sys.setdefaultencoding('utf8')
+
+
+def get_current_time():
+    """
+    Get current time in the (year-month-date Hour-minute-Second) format
+    :return:
+    """
+    ts = time.time()
+    timestamp = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    return timestamp
 
 
 class Connection:
@@ -103,11 +116,15 @@ class URL:
         :return:
         """
         url_dict = {}
+        mal_counter = 0
         try:
             with open(in_file) as f:
                 input_urls = f.readlines()
                 for url in input_urls:
                     verdict = self.get_url_verdict(url)
+                    if verdict == "Malicious":
+                        mal_counter += 1
+
                     url_dict.update({
                         'url_md5': url.split(',')[0],
                         'verdict': verdict,
@@ -115,6 +132,7 @@ class URL:
                     })
 
                     self.con.update_db_url_data(url_dict)
+            print("Total Malicious", mal_counter)
         except Exception as e:
             print("Exception Occurs: %s" % e)
             return False
@@ -128,16 +146,11 @@ def main():
     args = sys.argv
     if len(args) > 2 or len(args) < 2:
         print("Please provide the arguments in order as shown in example command")
-        print("\npython data-labeling-db.py filepath \nor\npython data-labeling-db.py /home/shahid/v2\n")
+        print("\npython data-labeling-db.py file path \nor\npython data-labeling-db.py /home/shahid/v2\n")
         sys.exit(1)
     else:
-        cur_dir = os.path.dirname(os.path.realpath(__file__))
-        file_name = "urls_verdict_result"  # urls_verdict_result_v1 or urls_verdict_result_v2
-        file_version = args[1]
-        # file_path = cur_dir + '/lib/' + file_name + '_' + file_version + '.csv'
         file_path = args[1]
         urls = URL()
-
         urls.read_url_file(file_path)
 
 
