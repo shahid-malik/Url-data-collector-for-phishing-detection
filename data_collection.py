@@ -18,6 +18,8 @@ from selenium import webdriver
 from lib import api, db, html2txt
 from PIL import Image
 from selenium.common.exceptions import TimeoutException
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 
 requests.packages.urllib3.disable_warnings()
 reload(sys)
@@ -448,7 +450,7 @@ def get_domain_attributes(domain_icons_directory, domain_directory, domain, chro
             data_obj['domain_md5'] = get_md5_hash(domain)
             data_obj['domain_base64'] = get_base64(domain)
             data_obj['domain_entropy'] = get_entropy(domain)
-            data_obj['domain_page_title'] = get_page_title(chrome_driver)
+            data_obj['domain_title'] = get_page_title(chrome_driver)
             data_obj['domain'] = domain
             data_obj['domain_favicons'] = domain_favicons
             data_obj['domain_content_type'] = domain_content_type
@@ -457,7 +459,7 @@ def get_domain_attributes(domain_icons_directory, domain_directory, domain, chro
             data_obj['domain_total_og_domains'] = domain_total_og_domains
             data_obj['domain_total_og_links'] = domain_total_og_urls
             data_obj['domain_entropy'] = get_entropy(domain)
-            data_obj['domain_isHtml'] = is_url_html(domain_content_type)
+            data_obj['domain_is_html'] = is_url_html(domain_content_type)
             data_obj['domain_file_type'] = get_file_type(domain)
             data_obj['source'] = source
 
@@ -466,7 +468,7 @@ def get_domain_attributes(domain_icons_directory, domain_directory, domain, chro
             else:
                 protocol = 'http'
             json_data = {'url_base64': data_obj['domain_base64'], 'protocol': protocol,
-                         'title': data_obj['domain_page_title']}
+                         'title': data_obj['domain_title']}
             write_json(json_data, domain_directory)
 
             print("  -----  Domain Attributes Done ...... ")
@@ -522,7 +524,7 @@ def get_url_attributes(url_icon_directory, url_directory, in_url, chrome_driver,
             data_obj['url_md5'] = url_hash
             data_obj['url_base64'] = url_base64
             data_obj['url_entropy'] = url_entropy
-            data_obj['url_page_title'] = page_title
+            data_obj['url_title'] = page_title
             data_obj['url_content_type'] = url_content_type
             data_obj['url_total_og_links'] = url_total_og_urls
             data_obj['url_og_domains'] = url_og_domains
@@ -530,7 +532,7 @@ def get_url_attributes(url_icon_directory, url_directory, in_url, chrome_driver,
             data_obj['url_favicons'] = url_favicons
             data_obj['url_total_favicon'] = url_total_favicons
             data_obj['url_file_type'] = file_type
-            data_obj['url_isHtml'] = is_html
+            data_obj['url_is_html'] = is_html
             data_obj['landing_url_hash'] = landing_url_hash
             data_obj['landing_url_base64'] = landing_url_base64
             data_obj['url_length'] = len(in_url)
@@ -639,7 +641,7 @@ def start_processing_url(input_url, data_directory, source="urlScan"):
         domain_attributes['domain_md5'] = url_hash
         domain_attributes['domain_base64'] = url_attributes['url_base64']
         domain_attributes['domain_entropy'] = url_attributes['url_entropy']
-        domain_attributes['domain_page_title'] = url_attributes['url_page_title']
+        domain_attributes['domain_title'] = url_attributes['url_title']
         domain_attributes['domain_favicons'] = url_attributes['url_favicons']
         domain_attributes['domain_content_type'] = url_attributes['url_content_type']
         domain_attributes['domain_total_favicon'] = url_attributes['url_total_favicon']
@@ -647,7 +649,7 @@ def start_processing_url(input_url, data_directory, source="urlScan"):
         domain_attributes['domain_total_og_domains'] = url_attributes['url_total_og_domains']
         domain_attributes['domain_total_og_links'] = url_attributes['url_total_og_links']
         domain_attributes['domain_entropy'] = url_attributes['url_entropy']
-        domain_attributes['domain_isHtml'] = url_attributes['url_isHtml']
+        domain_attributes['domain_is_html'] = url_attributes['url_is_html']
         domain_attributes['domain_file_type'] = url_attributes['url_file_type']
         domain_attributes['is_favicon_match'] = 0
         domain_attributes['source'] = url_attributes['source']
@@ -656,7 +658,7 @@ def start_processing_url(input_url, data_directory, source="urlScan"):
     data_obj.update(url_attributes)
     data_obj.update(domain_attributes)
     if url_attributes or domain_attributes:
-        title_match = is_title_match(data_obj['domain_page_title'], data_obj['url_page_title'])
+        title_match = is_title_match(data_obj['domain_title'], data_obj['url_title'])
         data_obj['is_favicon_match'] = is_favicon_match(domain_attributes['domain_favicons'],
                                                         url_attributes['url_favicons'])
         data_obj['title_match'] = title_match
@@ -688,15 +690,16 @@ if __name__ == '__main__':
     else:
         while True:
             try:
-                start_time = datetime.now()
-                print("  -----  Start Time   %s ......" % start_time)
-
                 url = api.get_url()
                 # url = 'https://mega.nz/#!KpRAFK6Q!dRtfzwmJl9VF-6ScHduEt06788pwP--EQmJ8qUf2cUY/'
-                data = start_processing_url(url, data_dir, "urlScan")
-                db.insert_data(data)
-                total_time = start_time - datetime.now()
-                print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds / 100000))
+                if url:
+                    start_time = datetime.now()
+                    print("  -----  Start Time   %s ......" % start_time)
+                    data = start_processing_url(url, data_dir, "urlScan")
+                    db.insert_data(data)
+                    total_time = start_time - datetime.now()
+                    print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds / 100000))
+                else:
+                    pass
             except Exception as urlScanApiException:
-                pass
-                # print("Exception in getting url from urlScan API\n%s" % urlScanApiException)
+                print("Exception in getting url from urlScan API\n%s" % urlScanApiException)
