@@ -5,9 +5,9 @@ import socket
 import hashlib
 import sys
 from contextlib import closing
+import config
 
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
-import config
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -19,18 +19,18 @@ def connect_db():
     :return:
     """
     if socket.gethostbyname(socket.gethostname()) == '127.0.1.1':
-        DATABASE_CONFIG = config.LOCAL_DATABASE_CONFIG
+        database_config = config.LOCAL_DATABASE_CONFIG
     else:
-        DATABASE_CONFIG = config.PROD_DATABASE_CONFIG
+        database_config = config.PROD_DATABASE_CONFIG
     #
     # if db_name != DATABASE_CONFIG['dbname']:
     #     raise ValueError("Could not find DB with given name")
 
     con = mysql.connector.connect(
-        host=DATABASE_CONFIG['host'],
-        user=DATABASE_CONFIG['user'],
-        password=DATABASE_CONFIG['password'],
-        db=DATABASE_CONFIG['dbname'],
+        host=database_config['host'],
+        user=database_config['user'],
+        password=database_config['password'],
+        db=database_config['dbname'],
         charset='utf8',
         use_unicode=True
     )
@@ -62,9 +62,9 @@ def add_column(con, table, col_name):
     :param col_name:
     :return:
     """
-    ADD_DATA_TABLE_QUERY = "ALTER TABLE %s ADD %s varchar(50)" % (table, col_name)
+    add_data_table_query = "ALTER TABLE %s ADD %s varchar(50)" % (table, col_name)
     try:
-        query_status = execute_query(con, ADD_DATA_TABLE_QUERY)
+        query_status = execute_query(con, add_data_table_query)
         if query_status:
             print("Column added successfully")
     except Exception as e:
@@ -93,6 +93,11 @@ def insert_data(data_dict):
     :param data_dict:
     :return:
     """
+
+    if len(data_dict.keys()) < 5:
+        print("  -----  Skipping DB entry due to data issue ......")
+        return
+
     table = 'package_features'
     con = connect_db()
 
@@ -178,19 +183,19 @@ def main():
     :return:
     """
     conn = connect_db()
-    DATA_TABLE = "package_features"
-    data = {'url_md5': 'test', 'url_base64': 'test', 'url_title': 'test', 'url_favicons': 'test',
-            'url_is_html': 'test', 'url_content_type': 'test', 'url_total_favicon': 'test', 'url_og_domains': 'test',
-            'url_total_og_domains': 'test', 'url_total_og_links': 'test', 'url_file_type': 'test',
-            'domain_md5': 'test', 'domain_base64': 'test', 'domain_title': 'test', 'domain_favicons': 'test',
-            'domain_is_html': 'test', 'domain_content_type': 'test', 'domain_total_favicon': 'test',
-            'domain_og_domains': 'test', 'domain_total_og_domains': 'test', 'domain_total_og_links': 'test',
-            'domain_file_type': 'test', 'landing_url_hash': 'test', 'landing_url_base64': 'test', 'title_match': 'test'
-            }
+    data_table = "package_features"
+    # data = {'url_md5': 'test', 'url_base64': 'test', 'url_title': 'test', 'url_favicons': 'test',
+    #         'url_is_html': 'test', 'url_content_type': 'test', 'url_total_favicon': 'test', 'url_og_domains': 'test',
+    #         'url_total_og_domains': 'test', 'url_total_og_links': 'test', 'url_file_type': 'test',
+    #         'domain_md5': 'test', 'domain_base64': 'test', 'domain_title': 'test', 'domain_favicons': 'test',
+    #         'domain_is_html': 'test', 'domain_content_type': 'test', 'domain_total_favicon': 'test',
+    #         'domain_og_domains': 'test', 'domain_total_og_domains': 'test', 'domain_total_og_links': 'test',
+    #         'domain_file_type': 'test', 'landing_url_hash': 'test', 'landing_url_base64': 'test', 'title_match': 'test'
+    #         }
     # execute_query(conn, DATA_TABLE_QUERY)
-    add_column(conn, DATA_TABLE, 'total_at_the_rate')
+    add_column(conn, data_table, 'total_at_the_rate')
     conn.close()
-    # (insert_data(DATA_TABLE, data))
+    # (insert_data(data_table, data))
 
 # if __name__ == "__main__":
 

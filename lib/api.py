@@ -20,10 +20,17 @@ def get_url():
         try:
             code = urllib2.urlopen(req.json()['url']).code
             if code:
-                url = req.json()['url']
-                new_url = db.check_if_url_processed(url)
+                input_url = req.json()['url']
+                new_url = db.check_if_url_processed(input_url)
                 if new_url:
-                    return url
+                    input_url = input_url.strip(' ')
+                    if not input_url.endswith('/'):
+                        input_url += '/'
+
+                    if not input_url:
+                        return get_url()
+
+                    return input_url
                 else:
                     return get_url()
         except Exception as e:
@@ -35,17 +42,15 @@ def get_url():
                 with open('lib/phishData/phishing_urls.txt', 'a') as f_writer:
                     f_writer.write(req.json()['url'])
                     f_writer.write("\n")
-                # print("Error Processing from api in URL: %s and Exception: %s" % (req.json()['url'], e))
                 return get_url()
         except:
-            # print("Exception")
             get_url()
     else:
         get_url()
 
 
-if __name__ == '__main__':
-
-    while(1):
-        url = get_url()
-        print(url)
+# if __name__ == '__main__':
+#
+#     while 1:
+#         url = get_url()
+#         print(url)

@@ -22,69 +22,67 @@ from selenium.common.exceptions import TimeoutException
 requests.packages.urllib3.disable_warnings()
 reload(sys)
 sys.setdefaultencoding('utf8')
-
-# Set the default timeout in seconds
-
 timeout = 50
 socket.setdefaulttimeout(timeout)
 
 
-def get_content_type(url):
+def get_content_type(input_url):
     """
     A processed url needs to be input, i.e http://url.com or https://url.com
-    :param url:
+    :param input_url:
     :return: content type of a url
     """
     try:
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0'}
-        content_type = requests.head(url, allow_redirects=True, timeout=5, verify=False, headers=headers).headers["Content-Type"]
+        content_type = requests.head(input_url, allow_redirects=True, timeout=5, verify=False, headers=headers).headers[
+            "Content-Type"]
     except requests.exceptions.Timeout:
         print("  -----  Error getting content type from url ...... ")
         content_type = 'text/html'
     return content_type
 
 
-def get_md5_hash(url):
+def get_md5_hash(input_url):
     """
     generate md5 hash of the string, In this case, a url with http or https is provided for the synchronization
     throughout the code
-    :param url:
+    :param input_url:
     :return: md5 hash
     """
     try:
         m = hashlib.md5()
-        m.update(url)
+        m.update(input_url)
         md5_hash = m.hexdigest()
     except:
         md5_hash = ''
     return md5_hash
 
 
-def get_base64(url):
+def get_base64(input_url):
     """
     get the base64 of the string
-    :param url:
+    :param input_url:
     :return: base64 encoded string
     """
     try:
-        b64_encoded = base64.b64encode(url.encode())
+        b64_encoded = base64.b64encode(input_url.encode())
     except Exception as exp:
         print("Error getting base64 of url or text with Exception \n %s" % exp)
         b64_encoded = ''
     return b64_encoded
 
 
-def get_url_domain_n_path(url):
+def get_url_domain_n_path(input_url):
     """
     Get the main domain of the url provided
-    :param url:
+    :param input_url:
     :return: landing domain of url(string)
     """
     domain = ''
     path = ''
     try:
-        if url is not None:
-            parsed_uri = urlparse(url)
+        if input_url is not None:
+            parsed_uri = urlparse(input_url)
             domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
             path = parsed_uri.path
     except Exception as exp:
@@ -144,8 +142,8 @@ def get_favicon_selenium(chrome_driver, directory):
                 md5_hash = save_favicon_to_directory(icon, name, path=directory)
                 hash_list.append(md5_hash)
                 total_favicons += 1
-            except:
-                pass
+            except Exception as FaviconException:
+                print(FaviconException)
 
     hash_list = ",".join(hash_list)
     return [total_favicons, hash_list]
@@ -253,21 +251,21 @@ def is_title_match(url_title, domain_title):
     return 0
 
 
-def get_file_type(url):
+def get_file_type(input_url):
     """
     Get the file type of the landing page on url
-    :param url:
+    :param input_url:
     :return:
     """
     mime = magic.Magic(mime=True)
     output = "tmp/output"
     try:
-        status = urllib2.urlopen(url).code
+        status = urllib2.urlopen(input_url).code
         if status:
-            urllib.urlretrieve(url, output)
+            urllib.urlretrieve(input_url, output)
             mimes = mime.from_file(output)
             return mimes
-    except Exception as ex:
+    except:
         return -1
 
 
@@ -280,8 +278,8 @@ def get_entropy(string, base=2.0):
     """
     dct = dict.fromkeys(list(string))
     pkvec = [float(string.count(c)) / len(string) for c in dct]
-    H = -sum([pk * math.log(pk) / math.log(base) for pk in pkvec])
-    return H
+    h = -sum([pk * math.log(pk) / math.log(base) for pk in pkvec])
+    return h
 
 
 def save_html(url_directory, chrome_driver):
@@ -293,11 +291,11 @@ def save_html(url_directory, chrome_driver):
     """
     try:
         page = chrome_driver.page_source.encode('utf-8')
-        file_path = url_directory + 'page.html'
+        html_file_path = url_directory + 'page.html'
         file_ = open(url_directory + '/' + 'page.html', 'w')
         file_.write(page)
         file_.close()
-        return file_path
+        return html_file_path
     except Exception as exp:
         print("Exception %s in saving html to package" % exp)
 
@@ -319,7 +317,7 @@ def create_screenshot(directory_path, chrome_driver):
 
 
 def fullpage_screenshot(directory_path, chrome_driver):
-    file = directory_path + "screenshot.png"
+    file_name = directory_path + "screenshot.png"
 
     try:
         total_width = chrome_driver.execute_script("return document.body.offsetWidth")
@@ -368,45 +366,44 @@ def fullpage_screenshot(directory_path, chrome_driver):
             os.remove(file_name)
             part = part + 1
             previous = rectangle
-        stitched_image.save(file)
+        stitched_image.save(file_name)
         return True
-    except:
-        pass
+    except Exception as HTMLException:
+        print(HTMLException)
 
 
-def create_package(data_directory, url):
+def create_package(data_directory, input_url):
     """
     Create a package with domain and url directories
     :param data_directory:
-    :param url:
+    :param input_url:
     :return:
     """
-    url_hash = get_md5_hash(url)
-    domain = get_url_domain_n_path(url)[0]
-    DOMAIN_ICONS_DIRECTORY = ''
-    DOMAIN_DIRECTORY = ''
-    PACKAGE_DIRECTORY = data_directory + url_hash + '/'
-    create_directory(PACKAGE_DIRECTORY)
-    if not url.endswith('/'):
-        url += '/'
+    url_hash = get_md5_hash(input_url)
+    domain = get_url_domain_n_path(input_url)[0]
+    domain_icons_directory = ''
+    domain_directory = ''
+    package_directory = data_directory + url_hash + '/'
+    create_directory(package_directory)
+    if not input_url.endswith('/'):
+        input_url += '/'
 
-    if url == domain:
-        URL_DIRECTORY = PACKAGE_DIRECTORY + 'url/'
-        URL_ICONS_DIRECTORY = URL_DIRECTORY + 'icons/'
-        create_directory(URL_DIRECTORY)
-        create_directory(URL_ICONS_DIRECTORY)
+    if input_url == domain:
+        url_directory = package_directory + 'url/'
+        url_icons_directory = url_directory + 'icons/'
+        create_directory(url_directory)
+        create_directory(url_icons_directory)
     else:
-        URL_DIRECTORY = PACKAGE_DIRECTORY + 'url/'
-        URL_ICONS_DIRECTORY = URL_DIRECTORY + 'icons/'
-        create_directory(URL_DIRECTORY)
-        create_directory(URL_ICONS_DIRECTORY)
+        url_directory = package_directory + 'url/'
+        url_icons_directory = url_directory + 'icons/'
+        create_directory(url_directory)
+        create_directory(url_icons_directory)
 
-        DOMAIN_DIRECTORY = PACKAGE_DIRECTORY + 'domain/'
-        DOMAIN_ICONS_DIRECTORY = DOMAIN_DIRECTORY + 'icons/'
-        create_directory(DOMAIN_DIRECTORY)
-        create_directory(DOMAIN_ICONS_DIRECTORY)
-    print("  -----  Package Created  ...... ")
-    return URL_DIRECTORY, URL_ICONS_DIRECTORY, DOMAIN_DIRECTORY, DOMAIN_ICONS_DIRECTORY
+        domain_directory = package_directory + 'domain/'
+        domain_icons_directory = domain_directory + 'icons/'
+        create_directory(domain_directory)
+        create_directory(domain_icons_directory)
+    return url_directory, url_icons_directory, domain_directory, domain_icons_directory
 
 
 def is_favicon_match(url_favicon, domain_favicon):
@@ -421,9 +418,10 @@ def is_favicon_match(url_favicon, domain_favicon):
     return 0
 
 
-def get_domain_attributes(domain_icons_directory, domain_directory, domain, chrome_driver):
+def get_domain_attributes(domain_icons_directory, domain_directory, domain, chrome_driver, source):
     """
     Get domain attributes.csv
+    :param source:
     :param domain_icons_directory:
     :param domain_directory:
     :param domain:
@@ -439,8 +437,8 @@ def get_domain_attributes(domain_icons_directory, domain_directory, domain, chro
 
             # create_screenshot(domain_directory, chrome_driver)
             fullpage_screenshot(domain_directory, chrome_driver)
-            file_path = save_html(domain_directory, chrome_driver)
-            html2txt.text_from_html(domain_directory, file_path)
+            html_file_path = save_html(domain_directory, chrome_driver)
+            html2txt.text_from_html(domain_directory, html_file_path)
 
             domain_total_og_urls, domain_og_urls_list = get_og_links(chrome_driver)
             domain_total_og_domains, domain_og_domains = get_og_domains(domain_og_urls_list)
@@ -461,6 +459,7 @@ def get_domain_attributes(domain_icons_directory, domain_directory, domain, chro
             data_obj['domain_entropy'] = get_entropy(domain)
             data_obj['domain_isHtml'] = is_url_html(domain_content_type)
             data_obj['domain_file_type'] = get_file_type(domain)
+            data_obj['source'] = source
 
             if 'https' in str(domain):
                 protocol = 'https'
@@ -483,42 +482,43 @@ def get_domain_attributes(domain_icons_directory, domain_directory, domain, chro
     return data_obj
 
 
-def get_url_attributes(url_icon_directory, url_directory, url, chrome_driver):
+def get_url_attributes(url_icon_directory, url_directory, in_url, chrome_driver, source):
     """
     Get attributes.csv from url
+    :param source: 
     :param url_icon_directory:
     :param url_directory:
-    :param url:
+    :param in_url:
     :param chrome_driver:
     :return:
     """
     retry = 0
     data_obj = {}
-    url_hash = get_md5_hash(url)
+    url_hash = get_md5_hash(in_url)
     while True:
         try:
-            chrome_driver.get(url)
+            chrome_driver.get(in_url)
 
             # create_screenshot(url_directory, chrome_driver)
             fullpage_screenshot(url_directory, chrome_driver)
 
-            file_path = save_html(url_directory, chrome_driver)
-            html2txt.text_from_html(url_directory, file_path)
+            html_file_path = save_html(url_directory, chrome_driver)
+            html2txt.text_from_html(url_directory, html_file_path)
 
             landing_url = chrome_driver.current_url
             landing_url_hash = get_md5_hash(landing_url)
             landing_url_base64 = get_base64(landing_url)
-            url_content_type = get_content_type(url)
+            url_content_type = get_content_type(in_url)
             url_total_og_urls, url_og_urls_list = get_og_links(chrome_driver)
             url_total_og_domains, url_og_domains = get_og_domains(url_og_urls_list)
             url_total_favicons, url_favicons = get_favicon_selenium(chrome_driver, url_icon_directory)
-            url_base64 = get_base64(url)
-            url_entropy = get_entropy(url)
+            url_base64 = get_base64(in_url)
+            url_entropy = get_entropy(in_url)
             page_title = get_page_title(chrome_driver)
-            file_type = get_file_type(url)
+            file_type = get_file_type(in_url)
             is_html = is_url_html(url_content_type)
 
-            data_obj['url'] = url
+            data_obj['url'] = in_url
             data_obj['url_md5'] = url_hash
             data_obj['url_base64'] = url_base64
             data_obj['url_entropy'] = url_entropy
@@ -533,9 +533,10 @@ def get_url_attributes(url_icon_directory, url_directory, url, chrome_driver):
             data_obj['url_isHtml'] = is_html
             data_obj['landing_url_hash'] = landing_url_hash
             data_obj['landing_url_base64'] = landing_url_base64
-            data_obj['url_length'] = len(url)
-            data_obj['total_at_the_rate'] = url.count('@')
-            if 'https' in str(url):
+            data_obj['url_length'] = len(in_url)
+            data_obj['total_at_the_rate'] = in_url.count('@')
+            data_obj['source'] = source
+            if 'https' in str(in_url):
                 protocol = 'https'
             else:
                 protocol = 'http'
@@ -608,9 +609,11 @@ def shutdown_driver(chrome_driver):
     return True
 
 
-def start_processing_url(data_directory, chrome_driver):
+def start_processing_url(input_url, data_directory, source="urlScan"):
     """
     Main function to start extracting data from the url page
+    :param source:
+    :param input_url:
     :param data_directory:
     :param chrome_driver:
     :return:
@@ -619,24 +622,18 @@ def start_processing_url(data_directory, chrome_driver):
 
     data_obj = {}
     domain_attributes = {}
-    url = api.get_url()
-    # url = 'https://mega.nz/#!KpRAFK6Q!dRtfzwmJl9VF-6ScHduEt06788pwP--EQmJ8qUf2cUY/'
-    if not url:
-        url = api.get_url()
-    url = url.strip(' ')
-    if not url.endswith('/'):
-        url += '/'
-    url_hash = get_md5_hash(url)
+    url_hash = get_md5_hash(input_url)
+    chrome_driver = get_chrome_driver_instance()
 
-    print(" ***** Processing %s  ***** " % url)
-    print("  -----  Start Time   %s ......" % start_time)
+    print(" ***** Processing %s  ***** " % input_url)
     print("  -----  Package_hash: %s" % url_hash)
-    domain, path = get_url_domain_n_path(url)
-    url_directory, url_icons_directory, domain_directory, domain_icons_directory = create_package(data_directory, url)
-    url_attributes = get_url_attributes(url_icons_directory, url_directory, url, chrome_driver)
+    domain, path = get_url_domain_n_path(input_url)
+    url_directory, url_icons_directory, domain_directory, domain_icons_directory = create_package(data_directory,
+                                                                                                  input_url)
 
-    if url != domain:
-        domain_attributes = get_domain_attributes(url_icons_directory, url_directory, domain, chrome_driver)
+    url_attributes = get_url_attributes(url_icons_directory, url_directory, input_url, chrome_driver, source)
+    if input_url != domain:
+        domain_attributes = get_domain_attributes(url_icons_directory, url_directory, domain, chrome_driver, source)
     elif url_attributes:
         domain_attributes['domain'] = domain
         domain_attributes['domain_md5'] = url_hash
@@ -653,6 +650,7 @@ def start_processing_url(data_directory, chrome_driver):
         domain_attributes['domain_isHtml'] = url_attributes['url_isHtml']
         domain_attributes['domain_file_type'] = url_attributes['url_file_type']
         domain_attributes['is_favicon_match'] = 0
+        domain_attributes['source'] = url_attributes['source']
         print("  -----  Domain Attributes Done ...... ")
 
     data_obj.update(url_attributes)
@@ -666,6 +664,7 @@ def start_processing_url(data_directory, chrome_driver):
     data_obj['uri_length'] = len(path)
     data_obj['timestamp'] = get_current_time()
 
+    shutdown_driver(chrome_driver)
     return data_obj
 
 
@@ -673,22 +672,31 @@ if __name__ == '__main__':
     """
     Program execution started from here
     """
-
-    PROJ_DIR = os.path.dirname(os.path.realpath(__file__))
+    # / home / shahid / projects / b_classifier / data / openphish / openphish_4_37_18_3_2019.csv
+    proj_dir = os.path.dirname(os.path.realpath(__file__))
     home_dir = expanduser('~')
-    DATA_DIRECTORY = home_dir+"/data/"
-    while True:
+    data_dir = home_dir + "/data/"
+    if len(sys.argv) > 1:
+        file_path = sys.argv[1]
         try:
-            start_time = datetime.now()
-            driver = get_chrome_driver_instance()
-            data = start_processing_url(DATA_DIRECTORY, driver)
-            if len(data.keys()) > 5:
-                db.insert_data(data)
-            else:
-                print("  -----  Skipping DB entry due to data issue ......")
-            shutdown_driver(driver)
+            with open(file_path) as infile:
+                lines = infile.readlines()
+                for line in lines:
+                    url = line.strip("\n")
+        except Exception as FileReadingException:
+            print(FileReadingException)
+    else:
+        while True:
+            try:
+                start_time = datetime.now()
+                print("  -----  Start Time   %s ......" % start_time)
 
-            total_time = start_time - datetime.now()
-            print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds / 100000))
-        except Exception as e:
-            print("Exception %s in main function" % e)
+                url = api.get_url()
+                # url = 'https://mega.nz/#!KpRAFK6Q!dRtfzwmJl9VF-6ScHduEt06788pwP--EQmJ8qUf2cUY/'
+                data = start_processing_url(url, data_dir, "urlScan")
+                db.insert_data(data)
+                total_time = start_time - datetime.now()
+                print("  -----  Total Time Spent  %s ......" % float(total_time.microseconds / 100000))
+            except Exception as urlScanApiException:
+                pass
+                # print("Exception in getting url from urlScan API\n%s" % urlScanApiException)
