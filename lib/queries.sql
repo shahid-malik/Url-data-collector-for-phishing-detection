@@ -9,3 +9,17 @@ ALTER DATABASE b_classifier DEFAULT CHARACTER SET utf8
 ALTER TABLE package_features DEFAULT CHARACTER SET utf8
 alter table package_features modify column domain_favicons MEDIUMTEXT
 set names utf8;
+
+
+
+CREATE TABLE IF NOT EXISTS verdict (
+
+    url_md5 VARCHAR(255) NOT NULL,
+    verdict varchar(255),
+	clf_version varchar(255),
+    verdict_prob varchar(255),
+    url_source varchar(255),
+    timestamp varchar(255),
+    PRIMARY KEY (url_md5)
+
+)  ENGINE=INNODB;

@@ -177,6 +177,36 @@ def check_if_url_processed(url):
         print("Exception %s in check if url processed method" % e)
 
 
+def insert_verdict_data(data_dict):
+    """
+    Insert data to the verdict table using the query
+    :param data_dict:
+    :return:
+    """
+
+    if len(data_dict.keys()) < 5:
+        print("  -----  Skipping DB entry due to data issue ......")
+        return
+
+    table = 'verdict'
+    con = connect_db()
+
+    data_insertion_query = "insert into %s (url_md5, verdict, clf_version, verdict_prob, timestamp, url_source) VALUES ('%s', " \
+                           "'%s', '%s', '%s', " \
+                           "'%s', '%s');" \
+                           % (table,
+                              data_dict['url_md5'],
+                              data_dict['verdict'],
+                              data_dict['clf_version'],
+                              data_dict['verdict_prob'],
+                              data_dict['url_source'],
+                              data_dict['timestamp'],
+                              )
+    query_status = execute_query(con, data_insertion_query)
+    if query_status:
+        print("  -----  Data Inserted Successfully  ...... ")
+
+
 def main():
     """
     main function to execute the functionality
