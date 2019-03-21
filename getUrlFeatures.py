@@ -1,13 +1,8 @@
 import sys
-sys.path.append('/projects/behaviouralClassifier/')
-import pdb
-# pdb.set_trace();
 from data_collection import *
 from classifier.feature_extraction.FeatureEngineering import *
 from classifier.classifier_v1 import *
-from classifier.preprocessing.urlPreprocessing import *
 from lib.db import *
-from joblib import load
 
 
 class LoadData:
@@ -24,39 +19,41 @@ class LoadData:
 
 if __name__ == '__main__':
 
-    url = "https://www.google.com/"
+    # url = "https://www.google.com/"
+    while True:
+        url = api.get_url()
+        url_md5 = get_md5_hash(url)
 
-    url_processing_obj = UrlPreProcessing(url)
-    url_md5 = url_processing_obj.get_url_md5()
+        data_dir = expanduser('~') + "/data/"
 
-    model_path = "/home/shahid/projects/behaviouralClassifier/classifier/bcl_classifier.joblib"
-    home_dir = expanduser('~')
-    data_dir = home_dir + "/data/"
+        modelObj = Model()
+        model = modelObj.get_trained_model()
 
-    data_dict = start_processing_url(url, data_dir, source='static')
-    df = pd.DataFrame(data_dict, index=[0])
+        data_dict = start_processing_url(url, data_dir, source='static')
+        db.insert_data(data_dict)
 
-    feature_set_obj = FeatureSet()
-    test_url = feature_set_obj.make_feature_set(df)
+        df = pd.DataFrame(data_dict, index=[0])
 
-    # model = get_trained_model()
-    model = load(model_path)
-    predicted = model.predict(test_url)
-    probs = model.predict_proba(test_url)
+        feature_set_obj = FeatureSet()
+        test_url = feature_set_obj.make_feature_set(df)
 
-    data = {
-        'verdict': predicted,
-        'url_source': 'urlScan',
-        'verdict_prob': probs[:, 1],
-        'url_md5': url_md5,
-        'timestamp': get_current_time(),
-        'clf_version': 'v1.0'
+        # model = get_trained_model()
+        predicted = model.predict(test_url)
+        probs = model.predict_proba(test_url)
 
-        }
+        data = {
+            'verdict': predicted[0],
+            'url_source': 'urlScan',
+            'verdict_prob': probs,
+            'url_md5': url_md5,
+            'timestamp': get_current_time(),
+            'clf_version': 'v1.0'
 
-    insert_verdict_data(data)
+            }
 
-    if predicted[0] == 0:
-        print("  -----  Benign with prob {}".format(probs))
-    else:
-        print("  -----  Malicious with prob {}".format(probs))
+        insert_verdict_data(data)
+
+        if predicted[0] == 0:
+            print("  -----  Benign with prob {}".format(probs))
+        else:
+            print("  -----  Malicious with prob {}".format(probs))

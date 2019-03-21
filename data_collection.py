@@ -388,7 +388,7 @@ def create_package(data_directory, input_url):
     domain_directory = ''
     package_directory = data_directory + url_hash + '/'
     create_directory(package_directory)
-    if not input_url.endswith('/'):
+    if input_url and not input_url.endswith('/'):
         input_url += '/'
 
     if input_url == domain:
