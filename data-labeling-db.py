@@ -5,9 +5,10 @@ import socket
 import time
 
 import mysql.connector
-from behaviouralClassifier.data_collection import get_current_time
+from data_collection import get_current_time
+
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lib'))
-import behaviouralClassifier.lib.config as config
+import lib.config as config
 
 reload(sys)
 sys.setdefaultencoding('utf8')

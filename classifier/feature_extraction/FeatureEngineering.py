@@ -270,11 +270,14 @@ class FeatureSet:
             if 'verdict' in input_data:
                 feature_class.convert_verdict()
 
-            feature_class.matching_md5_og_domains_column(['domain_og_domains', 'url_og_domains'], new_feature='og_matches')
-            feature_class.matching_md5_og_domains_column(['domain_favicons', 'url_favicons'], new_feature='favicon_matches')
+            feature_class.matching_md5_og_domains_column(['domain_og_domains', 'url_og_domains'],
+                                                         new_feature='og_matches')
+            feature_class.matching_md5_og_domains_column(['domain_favicons', 'url_favicons'],
+                                                         new_feature='favicon_matches')
             feature_class.matching_url_domain_column(column_name=['url_base64', 'domain_base64'],
                                                      new_feature='full_partial_match')
-            final_removal_list = ['url_md5', 'domain_md5', 'url_base64', 'url_favicons', 'url_og_domains', 'domain_base64',
+            final_removal_list = ['url_md5', 'domain_md5', 'url_base64', 'url_favicons', 'url_og_domains',
+                                  'domain_base64',
                                   'domain_favicons', 'domain_og_domains']
 
             feature_class.create_total_favicon_ratio()
@@ -294,7 +297,8 @@ if __name__ == '__main__':
     try:
         home_dir = expanduser('~')
         dataset_file_path = home_dir+"/projects/behaviouralClassifier/classifier/data/labelled_data_v1.csv"
-        feature_df_path = home_dir+"/projects/behaviouralClassifier/classifier/data/features_db/temp2_feature_dataset_v1_19032019.csv"
+        feature_df_path = home_dir + "/projects/behaviouralClassifier/classifier/data/features_db" \
+                                     "/temp2_feature_dataset_v1_19032019.csv "
         data_packages_path = home_dir+'/data/'
 
         load_data_obj = LoadData()

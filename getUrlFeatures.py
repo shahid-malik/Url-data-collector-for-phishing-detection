@@ -1,8 +1,12 @@
-from behaviouralClassifier.data_collection import *
-from behaviouralClassifier.classifier.feature_extraction.FeatureEngineering import *
-from behaviouralClassifier.classifier.classifier_v1 import *
-from behaviouralClassifier.classifier.preprocessing.urlPreprocessing import *
-from behaviouralClassifier.lib.db import *
+import sys
+sys.path.append('/projects/behaviouralClassifier/')
+import pdb
+# pdb.set_trace();
+from data_collection import *
+from classifier.feature_extraction.FeatureEngineering import *
+from classifier.classifier_v1 import *
+from classifier.preprocessing.urlPreprocessing import *
+from lib.db import *
 from joblib import load
 
 
@@ -20,7 +24,7 @@ class LoadData:
 
 if __name__ == '__main__':
 
-    url = "https://www.google.com/search?q=if+using+all+scaller+values+you+must+pass+an+index&oq=if+using+all+scaller+values+you+must+pass+an+index&aqs=chrome..69i57j0l5.9687j0j7&sourceid=chrome&ie=UTF-8"
+    url = "https://www.google.com/"
 
     url_processing_obj = UrlPreProcessing(url)
     url_md5 = url_processing_obj.get_url_md5()

@@ -371,6 +371,7 @@ def fullpage_screenshot(directory_path, chrome_driver):
         stitched_image.save(file_name)
         return True
     except Exception as HTMLException:
+        os.remove(file_name)
         print(HTMLException)
 
 
