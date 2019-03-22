@@ -60,7 +60,7 @@ class Model:
         return dt
 
     def get_trained_model(self):
-        model_path = "/home/shahid/projects/behaviouralClassifier/classifier/bcl_classifier.joblib"
+        model_path = "classifier/bcl_classifier.joblib"
         model = load(model_path)
         return model
 
@@ -155,17 +155,6 @@ class Model:
         print("\n  Accuracy = {}".format(np.mean(predicted == y_test)))
         print(metrics.confusion_matrix(y_test, predicted))
         print(metrics.classification_report(y_test, predicted))
-
-    # def get_trained_model(self):
-    #     global test_set, dt_classifier
-    #     data_path = "../data/final_dataset_14032019.csv"
-    #     data = self.load_dataset(data_path)
-    #     # train_set, test_set = get_train_test_set_manual(data, 0, 214, 0, 11995)
-    #     train_set, test_set = self.get_train_test_set_manual(data, 0, 214, 0, 11995)
-    #     y = train_set.pop('verdict')
-    #     X = train_set
-    #     dt_classifier = self.get_dt_classifier(X, y)  # type: object
-    #     return dt_classifier
 
 
 if __name__ == '__main__':

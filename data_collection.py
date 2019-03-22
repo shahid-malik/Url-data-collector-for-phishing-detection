@@ -676,7 +676,6 @@ if __name__ == '__main__':
     """
     Program execution started from here
     """
-    # / home / shahid / projects / b_classifier / data / openphish / openphish_4_37_18_3_2019.csv
     proj_dir = os.path.dirname(os.path.realpath(__file__))
     home_dir = expanduser('~')
     data_dir = home_dir + "/data/"

@@ -147,7 +147,7 @@ def main():
     args = sys.argv
     if len(args) > 2 or len(args) < 2:
         print("Please provide the arguments in order as shown in example command")
-        print("\npython data-labeling-db.py file path \nor\npython data-labeling-db.py /home/shahid/v2\n")
+        print("\npython data-labeling-db.py file path \nor\npython data-labeling-db.py ~/v2\n")
         sys.exit(1)
     else:
         file_path = args[1]
