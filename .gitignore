@@ -1,4 +1,4 @@
-DATA/
+0DATA/
 fishing_package_data/
 .idea/
 test.py
@@ -10,7 +10,7 @@ output*
 tmp
 lib/phishData/phishing_urls.txt
 lib/phishData/phishing_urls.txt
-lib/phishData/
-lib/phishData/
+lib/phishData/*
+/lib/phishData/*
 lib/urls_verdict_result_v4.csv
 

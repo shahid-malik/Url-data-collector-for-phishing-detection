@@ -21,39 +21,43 @@ if __name__ == '__main__':
 
     # url = "https://www.google.com/"
     while True:
-        url = api.get_url()
-        url_md5 = get_md5_hash(url)
 
-        data_dir = expanduser('~') + "/data/"
+        try:
+            url = api.get_url()
+            url_md5 = get_md5_hash(url)
 
-        modelObj = Model()
-        model = modelObj.get_trained_model()
+            data_dir = expanduser('~') + "/data/"
 
-        data_dict = start_processing_url(url, data_dir, source='static')
-        db.insert_data(data_dict)
+            modelObj = Model()
+            model = modelObj.get_trained_model()
 
-        df = pd.DataFrame(data_dict, index=[0])
+            data_dict = start_processing_url(url, data_dir, source='static')
+            db.insert_data(data_dict)
 
-        feature_set_obj = FeatureSet()
-        test_url = feature_set_obj.make_feature_set(df)
+            df = pd.DataFrame(data_dict, index=[0])
 
-        # model = get_trained_model()
-        predicted = model.predict(test_url)
-        probs = model.predict_proba(test_url)
+            feature_set_obj = FeatureSet()
+            test_url = feature_set_obj.make_feature_set(df)
 
-        data = {
-            'verdict': predicted[0],
-            'url_source': 'urlScan',
-            'verdict_prob': probs,
-            'url_md5': url_md5,
-            'timestamp': get_current_time(),
-            'clf_version': 'v1.0'
+            # model = get_trained_model()
+            predicted = model.predict(test_url)
+            probs = model.predict_proba(test_url)
 
-            }
+            data = {
+                'verdict': predicted[0],
+                'url_source': 'urlScan',
+                'verdict_prob': probs,
+                'url_md5': url_md5,
+                'timestamp': get_current_time(),
+                'clf_version': 'v1.0'
 
-        insert_verdict_data(data)
+                }
 
-        if predicted[0] == 0:
-            print("  -----  Benign with prob {}".format(probs))
-        else:
-            print("  -----  Malicious with prob {}".format(probs))
+            insert_verdict_data(data)
+
+            if predicted[0] == 0:
+                print("  -----  Benign with prob {}".format(probs))
+            else:
+                print("  -----  Malicious with prob {}".format(probs))
+        except:
+            pass

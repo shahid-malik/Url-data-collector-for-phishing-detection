@@ -191,7 +191,8 @@ def insert_verdict_data(data_dict):
     table = 'verdict'
     con = connect_db()
 
-    data_insertion_query = "insert into %s (url_md5, verdict, clf_version, verdict_prob, timestamp, url_source) VALUES ('%s', " \
+    data_insertion_query = "insert into %s (url_md5, verdict, clf_version, verdict_prob, url_source, timestamp) " \
+                           "VALUES ('%s', " \
                            "'%s', '%s', '%s', " \
                            "'%s', '%s');" \
                            % (table,
@@ -214,15 +215,14 @@ def main():
     """
     conn = connect_db()
     data_table = "package_features"
-    # data = {'url_md5': 'test', 'url_base64': 'test', 'url_title': 'test', 'url_favicons': 'test',
-    #         'url_is_html': 'test', 'url_content_type': 'test', 'url_total_favicon': 'test', 'url_og_domains': 'test',
-    #         'url_total_og_domains': 'test', 'url_total_og_links': 'test', 'url_file_type': 'test',
-    #         'domain_md5': 'test', 'domain_base64': 'test', 'domain_title': 'test', 'domain_favicons': 'test',
-    #         'domain_is_html': 'test', 'domain_content_type': 'test', 'domain_total_favicon': 'test',
-    #         'domain_og_domains': 'test', 'domain_total_og_domains': 'test', 'domain_total_og_links': 'test',
-    #         'domain_file_type': 'test', 'landing_url_hash': 'test', 'landing_url_base64': 'test', 'title_match': 'test'
-    #         }
-    # execute_query(conn, DATA_TABLE_QUERY)
+    # data = {'url_md5': 'test', 'url_base64': 'test', 'url_title': 'test', 'url_favicons': 'test', 'url_is_html':
+    # 'test', 'url_content_type': 'test', 'url_total_favicon': 'test', 'url_og_domains': 'test',
+    # 'url_total_og_domains': 'test', 'url_total_og_links': 'test', 'url_file_type': 'test', 'domain_md5': 'test',
+    # 'domain_base64': 'test', 'domain_title': 'test', 'domain_favicons': 'test', 'domain_is_html': 'test',
+    # 'domain_content_type': 'test', 'domain_total_favicon': 'test', 'domain_og_domains': 'test',
+    # 'domain_total_og_domains': 'test', 'domain_total_og_links': 'test', 'domain_file_type': 'test',
+    # 'landing_url_hash': 'test', 'landing_url_base64': 'test', 'title_match': 'test' } execute_query(conn,
+    # DATA_TABLE_QUERY)
     add_column(conn, data_table, 'total_at_the_rate')
     conn.close()
     # (insert_data(data_table, data))

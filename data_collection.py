@@ -38,7 +38,8 @@ def get_content_type(input_url):
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0'}
         content_type = requests.head(input_url, allow_redirects=True, timeout=5, verify=False, headers=headers).headers[
             "Content-Type"]
-    except requests.exceptions.Timeout:
+    # except requests.exceptions.Timeout:
+    except:
         print("  -----  Error getting content type from url ...... ")
         content_type = 'text/html'
     return content_type
@@ -146,6 +147,7 @@ def get_favicon_selenium(chrome_driver, directory):
                 total_favicons += 1
             except Exception as FaviconException:
                 print(FaviconException)
+                pass
 
     hash_list = ",".join(hash_list)
     return [total_favicons, hash_list]
@@ -618,7 +620,6 @@ def start_processing_url(input_url, data_directory, source="urlScan"):
     :param source:
     :param input_url:
     :param data_directory:
-    :param chrome_driver:
     :return:
     :return:
     """
@@ -692,7 +693,6 @@ if __name__ == '__main__':
         while True:
             try:
                 url = api.get_url()
-                # url = 'https://mega.nz/#!KpRAFK6Q!dRtfzwmJl9VF-6ScHduEt06788pwP--EQmJ8qUf2cUY/'
                 if url:
                     start_time = datetime.now()
                     print("  -----  Start Time   %s ......" % start_time)
