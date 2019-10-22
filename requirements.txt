@@ -40,7 +40,7 @@ numpy==1.16.2
 pandas==0.24.1
 pathlib==1.0.1
 patsy==0.5.1
-Pillow==5.4.1
+Pillow==6.2.0
 post==2018.11.20
 protobuf==3.6.1
 public==2018.11.20
