@@ -18,7 +18,7 @@ cycler==0.10.0
 daphne==0.9.1
 dill==0.2.9
 dj-database-url==0.4.0
-Django==1.9.3
+Django==1.11.29
 django-cors-headers==2.5.2
 fuzzywuzzy==0.17.0
 get==2018.11.19
